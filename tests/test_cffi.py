@@ -111,5 +111,14 @@ def test_jl_get_absent():
         x = j.get(12, 1)
         assert x == 1
 
+def test_jl_from_dict():
+    with JudyL({10: 1, 2: 11}) as j:
+        d = dict(j)
+        assert d == {2L: 11L, 10L: 1L}
 
-# TODO: Convert the other doctests.
+def test_jl_from_list():
+    with JudyL([(10, 1), (2, 11)]) as j:
+        d = dict(j)
+        assert d == {2L: 11L, 10L: 1L}
+
+# TODO: Convert the missing doctests.
