@@ -19,7 +19,7 @@ It's implemented using both [Cython](http://http://cython.org/) and
 
 ## Distribution
 
-`judyz_cffi` is distributed as source:
+`judyz-cffi` is distributed as source:
 
     python setup.py sdist
 
@@ -27,7 +27,7 @@ It's implemented using both [Cython](http://http://cython.org/) and
 
     python setup.py bdist_egg
 
-To compile `judyz_cython` inplace:
+To compile `judyz-cython` inplace:
 
 ```
 cd src/judycython
@@ -38,9 +38,10 @@ nosetests
 
 ## Installation From Local Build
 
-`pip install --pre --no-index --find-links .../judyz/src/judyz-cffi/dist/judyz-cffi-0.1.tar.gz judyz-cffi`
+If `pip install` doesn't work:
+`pip install --pre --no-index --find-links .../judyz/src/judyzcffi/dist/judyz_cffi-0.1.tar.gz judyz-cffi`
 
-`easy_install .../judyz/src/judyz_cython/dist/judyz_cython-0.1-py2.7-linux-x86_64.egg`
+`easy_install .../judyz/src/judyzcython/dist/judyz_cython-0.1-py2.7-linux-x86_64.egg`
 
 
 ## Usage Requirements
@@ -48,7 +49,3 @@ nosetests
 * libjudydebian1
 * `judyz-cffi`: libffi6
 
-
-## Misc
-
-* Why is src/judycython thus named? No special char, not the module's name
