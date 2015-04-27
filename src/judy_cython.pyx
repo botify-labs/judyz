@@ -56,7 +56,7 @@ cdef class Judy1:
     cpdef __enter__(self):
         return self
 
-    cpdef __exit__(self):
+    cpdef __exit__(self, exc_type, exc_val, exc_tb):
         self.clear()
 
     cpdef clear(self):
@@ -218,7 +218,7 @@ cdef class JudyL:
     cpdef __enter__(self):
         return self
 
-    cpdef __exit__(self):
+    cpdef __exit__(self, exc_type, exc_val, exc_tb):
         self.clear()
 
     cpdef clear(self):
