@@ -14,8 +14,8 @@ path = os.path.dirname(
     os.path.abspath(inspect.getfile(inspect.currentframe())))
 sys.path.append(os.path.join(path, "../src"))
 
-from judy_cython import Judy1
-from judy_cython import JudyL
+from judy_cffi import Judy1
+from judy_cffi import JudyL
 
 
 def test_j1_bool():
@@ -104,6 +104,7 @@ def test_jl_len():
 def test_jl_getitem_absent():
     with JudyL() as j:
         x = j[12]
+
 
 def test_jl_get_absent():
     with JudyL() as j:

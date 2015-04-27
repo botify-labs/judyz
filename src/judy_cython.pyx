@@ -114,11 +114,13 @@ cdef class Judy1Iterator:
     """
     Iterates on a Judy1.
     """
+    cdef Judy1 _j1
     cdef cjudy.PJudy1_t _array
     cdef unsigned long _index
     cdef short int _start
 
     def __cinit__(self, Judy1 j1):
+        self._j1 = j1
         self._array = j1._array
         self._start = 1
         self._index = 0
@@ -320,11 +322,13 @@ cdef class JudyLIterator:
     """
     Iterates on a JudyL.
     """
+    cdef JudyL j
     cdef cjudy.PJudyL_t _array
     cdef unsigned long _index
     cdef short int _start
 
     def __cinit__(self, JudyL j):
+        self._j = j
         self._array = j._array
         self._index = 0
         self._start = True
