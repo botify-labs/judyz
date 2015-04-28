@@ -12,10 +12,10 @@ from nose.tools import raises
 
 path = os.path.dirname(
     os.path.abspath(inspect.getfile(inspect.currentframe())))
-sys.path.append(os.path.join(path, "../src"))
+sys.path.append(os.path.join(path, "../src/judyz-cffi"))
 
-from judy_cffi import Judy1
-from judy_cffi import JudyL
+from judyz_cffi import Judy1
+from judyz_cffi import JudyL
 
 
 def test_j1_compiled_ok():
