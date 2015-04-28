@@ -67,7 +67,7 @@ typedef unsigned __int64 uint64_t;
 extern "C" {
 #endif
 
-#include "../judy-cffi/Judy_cffi.h"
+#include "../judyz-cffi/Judy_cffi.h"
 
 
 #ifdef __cplusplus
