@@ -48,4 +48,3 @@ If `pip install` doesn't work:
 
 * libjudydebian1
 * `judyz-cffi`: libffi6
-
