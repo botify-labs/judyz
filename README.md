@@ -51,4 +51,4 @@ nosetests
 
 ## Misc
 
-* Why is src/judycython thus named? No special char, not the module's namegit st
+* Why is src/judycython thus named? No special char, not the module's name
