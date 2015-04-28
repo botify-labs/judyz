@@ -317,6 +317,25 @@ cdef class JudyL:
         # for k in kwargs:
         #     self.c_set(k, kwargs[k])
 
+    def iteritems(self):
+        cdef cjudy.JError_t err
+        cdef cjudy.PPvoid_t p
+        cdef unsigned long index
+        index = 0
+        p = cjudy.JudyLFirst(self._array, &index, &err)
+        if p == <cjudy.PPvoid_t>-1:
+            raise Exception("err={}".format(err.je_Errno))
+        if p == NULL:
+            return
+        yield index, (<unsigned long*>p)[0]
+        while 1:
+            p = cjudy.JudyLNext(self._array, &index, &err)
+            if p == <cjudy.PPvoid_t>-1:
+                raise Exception("err={}".format(err.je_Errno))
+            if p == NULL:
+                break
+            yield index, (<unsigned long*>p)[0]
+
 
 cdef class JudyLIterator:
     """

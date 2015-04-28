@@ -224,3 +224,22 @@ class JudyL(object):
 
     def __iter__(self):
         return JudyLIterator(self)
+
+    def iteritems(self):
+        err = _ffi.new("JError_t *")
+        index = _ffi.new("unsigned long*")
+        p = _cjudy.JudyLFirst(self._array[0], index, err)
+        if p == JudyL.M1:
+            raise Exception("err={}".format(err.je_Errno))
+        if p == _ffi.NULL:
+            return
+        v = _ffi.cast("unsigned long", p[0])
+        yield index[0], int(v)
+        while 1:
+            p = _cjudy.JudyLNext(self._array[0], index, err)
+            if p == JudyL.M1:
+                raise Exception("err={}".format(err.je_Errno))
+            if p == _ffi.NULL:
+                break
+            v = _ffi.cast("unsigned long", p[0])
+            yield index[0], int(v)
