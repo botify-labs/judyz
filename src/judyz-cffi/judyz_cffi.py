@@ -8,19 +8,32 @@ python-cffi
 
 from cffi import FFI
 import inspect
-import os
+# import os
+from os import path
+
+JUDY_CFFI_H = "Judy_cffi.h"
 
 
 def load():
+    global _ffi, _cjudy
+    from pkg_resources import Requirement, resource_filename, DistributionNotFound
+    try:
+        filename = resource_filename(Requirement.parse("judy-cffi"), JUDY_CFFI_H)
+        open(filename)
+    except (DistributionNotFound, IOError):
+        if path.exists(JUDY_CFFI_H):
+            filename = JUDY_CFFI_H
+        else:
+            p = path.dirname(__file__)
+            filename = path.join(p, JUDY_CFFI_H)
+    # print "*** filename =", filename
     ffi = FFI()
-    path = os.path.dirname(
-        os.path.abspath(inspect.getfile(inspect.currentframe())))
-    ffi.cdef(open(os.path.join(path, "Judy_cffi.h")).read())
+    ffi.cdef(open(filename).read())
     cjudy = ffi.dlopen("Judy")
-    return ffi, cjudy
+    _ffi, _cjudy = ffi, cjudy
 
 
-_ffi, _cjudy = load()
+load()
 
 
 class Judy1Iterator(object):
