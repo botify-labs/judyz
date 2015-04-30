@@ -138,4 +138,31 @@ def test_jl_get_absent():
         assert x == 1
 
 
+def test_jl_iteritems():
+    with JudyL() as j:
+        for i in range(10):
+            j[i + 10] = i
+        i = 0
+        start = True
+        for k, v in j.iteritems():
+            assert k == v + 10
+            if start:
+                assert k == 10
+                start = False
+            i += 1
+        assert i == 10
+
+def test_jl_keys():
+    with JudyL() as j:
+        for i in range(10):
+            j[i + 10] = i
+        i = 0
+        start = True
+        for k in j.keys():
+            if start:
+                assert k == 10
+                start = False
+            i += 1
+        assert i == 10
+
 # TODO: Convert the other doctests.
