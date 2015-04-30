@@ -12,7 +12,7 @@ from nose.tools import raises
 
 path = os.path.dirname(
     os.path.abspath(inspect.getfile(inspect.currentframe())))
-sys.path.append(os.path.join(path, "../src/judyz-cffi"))
+sys.path.append(os.path.join(path, "../src/judyzcffi"))
 
 from judyz_cffi import Judy1
 from judyz_cffi import JudyL
@@ -148,6 +148,7 @@ def test_jl_from_dict():
 def test_jl_from_list():
     with JudyL([(10, 1), (2, 11)]) as j:
         d = dict(j)
+        print(d)
         assert d == {2L: 11L, 10L: 1L}
 
 
@@ -159,6 +160,20 @@ def test_jl_iteritems():
         start = True
         for k, v in j.iteritems():
             assert k == v + 10
+            if start:
+                assert k == 10
+                start = False
+            i += 1
+        assert i == 10
+
+
+def test_jl_keys():
+    with JudyL() as j:
+        for i in range(10):
+            j[i + 10] = i
+        i = 0
+        start = True
+        for k in j.keys():
             if start:
                 assert k == 10
                 start = False

@@ -7,8 +7,6 @@ python-cffi
 """
 
 from cffi import FFI
-import inspect
-# import os
 from os import path
 
 JUDY_CFFI_H = "Judy_cffi.h"
@@ -16,9 +14,12 @@ JUDY_CFFI_H = "Judy_cffi.h"
 
 def load():
     global _ffi, _cjudy
-    from pkg_resources import Requirement, resource_filename, DistributionNotFound
+    from pkg_resources import (
+        Requirement, resource_filename, DistributionNotFound
+    )
     try:
-        filename = resource_filename(Requirement.parse("judy-cffi"), JUDY_CFFI_H)
+        filename = resource_filename(
+            Requirement.parse("judy-cffi"), JUDY_CFFI_H)
         open(filename)
     except (DistributionNotFound, IOError):
         if path.exists(JUDY_CFFI_H):
@@ -195,7 +196,7 @@ class JudyL(object):
         p = _cjudy.JudyLIns(self._array, key, err)
         if p == _ffi.NULL:
             raise Exception(err.je_Errno)
-        p[0] =  _ffi.cast("void*", value)
+        p[0] = _ffi.cast("void*", value)
 
     def __getitem__(self, item):
         err = _ffi.new("JError_t *")
@@ -204,7 +205,7 @@ class JudyL(object):
             raise KeyError(item)
         if p == JudyL.M1:
             raise Exception(err.je_Errno)
-        return _ffi.cast("unsigned long", p[0])
+        return int(_ffi.cast("unsigned long", p[0]))
 
     def __contains__(self, item):
         err = _ffi.new("JError_t *")
@@ -213,14 +214,14 @@ class JudyL(object):
             raise Exception(err.je_Errno)
         return p != _ffi.NULL
 
-    def get(self, item, default_value):
+    def get(self, item, default_value=0):
         err = _ffi.new("JError_t *")
         p = _cjudy.JudyLGet(self._array[0], item, err)
         if p == _ffi.NULL:
             return default_value
         if p == JudyL.M1:
             raise Exception(err.je_Errno)
-        return _ffi.cast("unsigned long", p[0])
+        return int(_ffi.cast("unsigned long", p[0]))
 
     def __iter__(self):
         return JudyLIterator(self)
@@ -233,13 +234,30 @@ class JudyL(object):
             raise Exception("err={}".format(err.je_Errno))
         if p == _ffi.NULL:
             return
-        v = _ffi.cast("unsigned long", p[0])
-        yield index[0], int(v)
+        v = int(_ffi.cast("unsigned long", p[0]))
+        yield index[0], v
         while 1:
             p = _cjudy.JudyLNext(self._array[0], index, err)
             if p == JudyL.M1:
                 raise Exception("err={}".format(err.je_Errno))
             if p == _ffi.NULL:
                 break
-            v = _ffi.cast("unsigned long", p[0])
-            yield index[0], int(v)
+            v = int(_ffi.cast("unsigned long", p[0]))
+            yield index[0], v
+
+    def keys(self):
+        err = _ffi.new("JError_t *")
+        index = _ffi.new("unsigned long*")
+        p = _cjudy.JudyLFirst(self._array[0], index, err)
+        if p == JudyL.M1:
+            raise Exception("err={}".format(err.je_Errno))
+        if p == _ffi.NULL:
+            return
+        yield index[0]
+        while 1:
+            p = _cjudy.JudyLNext(self._array[0], index, err)
+            if p == JudyL.M1:
+                raise Exception("err={}".format(err.je_Errno))
+            if p == _ffi.NULL:
+                break
+            yield index[0]

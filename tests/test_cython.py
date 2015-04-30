@@ -152,4 +152,17 @@ def test_jl_iteritems():
             i += 1
         assert i == 10
 
+def test_jl_keys():
+    with JudyL() as j:
+        for i in range(10):
+            j[i + 10] = i
+        i = 0
+        start = True
+        for k in j.keys():
+            if start:
+                assert k == 10
+                start = False
+            i += 1
+        assert i == 10
+
 # TODO: Convert the other doctests.
