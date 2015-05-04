@@ -2,8 +2,8 @@ cdef extern from "./Judy_cython.h":
     ctypedef void *Pvoid_t
     ctypedef void *Pcvoid_t
     ctypedef void **PPvoid_t
-    ctypedef unsigned long Word_t
-    ctypedef unsigned long *PWord_t
+    ctypedef signed long Word_t
+    ctypedef signed long *PWord_t
     ctypedef unsigned char uint8_t
 
     ctypedef struct _Judy1:
@@ -49,11 +49,11 @@ cdef extern from "./Judy_cython.h":
     int      Judy1LastEmpty(PcJudy1_t  PArray, PWord_t PIndex, PJError_t PJError)
     int      Judy1PrevEmpty(PcJudy1_t  PArray, PWord_t PIndex, PJError_t PJError)
 
-    void** JudyLGet(PcJudyL_t PArray, unsigned int Index, PJError_t PJError)
-    void** JudyLIns(PPJudyL_t PPArray, unsigned int Index, PJError_t PJError)
+    void** JudyLGet(PcJudyL_t PArray, Word_t Index, PJError_t PJError)
+    void** JudyLIns(PPJudyL_t PPArray, Word_t Index, PJError_t PJError)
     int JudyLInsArray(PPJudyL_t PPArray, unsigned int Count, const PWord_t  PIndex, const PWord_t  PValue, PJError_t PJError)
-    int JudyLDel(PPJudyL_t PPArray, unsigned int Index, PJError_t PJError)
-    unsigned int JudyLCount(PcJudyL_t PArray, unsigned int Index1, unsigned int Index2, PJError_t PJError)
+    int JudyLDel(PPJudyL_t PPArray, Word_t Index, PJError_t PJError)
+    unsigned int JudyLCount(PcJudyL_t PArray, Word_t Index1, Word_t Index2, PJError_t PJError)
     void** JudyLByCount(PcJudyL_t PArray, unsigned int Count, PWord_t PIndex, PJError_t PJError)
     unsigned int JudyLFreeArray(PPJudyL_t PPArray, PJError_t PJError)
     unsigned int JudyLMemUsed(PcJudyL_t PArray)

@@ -103,6 +103,13 @@ def test_j1_from_list():
         assert n == 21
 
 
+def test_j1_signed():
+    with Judy1([-1]) as j:
+        assert -1 in j
+        for k in j:
+            assert k == -1
+
+
 def test_jl_bool():
     j = JudyL()
     assert not bool(j)
@@ -132,10 +139,24 @@ def test_jl_getitem_absent():
     with JudyL() as j:
         x = j[12]
 
+
 def test_jl_get_absent():
     with JudyL() as j:
         x = j.get(12, 1)
         assert x == 1
+
+
+def test_jl_from_dict():
+    with JudyL({10: 1, 2: 11}) as j:
+        d = dict(j)
+        assert d == {2L: 11L, 10L: 1L}
+
+
+def test_jl_from_list():
+    with JudyL([(10, 1), (2, 11)]) as j:
+        d = dict(j)
+        print(d)
+        assert d == {2L: 11L, 10L: 1L}
 
 
 def test_jl_iteritems():
@@ -152,6 +173,7 @@ def test_jl_iteritems():
             i += 1
         assert i == 10
 
+
 def test_jl_keys():
     with JudyL() as j:
         for i in range(10):
@@ -165,4 +187,18 @@ def test_jl_keys():
             i += 1
         assert i == 10
 
-# TODO: Convert the other doctests.
+
+def test_jl_signed():
+    with JudyL([(-1, -1)]) as j:
+        assert -1 in j
+        assert j[-1] == -1
+        for k, v in j:
+            assert k == -1
+            assert v == -1
+        for k, v in j.iteritems():
+            assert k == -1
+            assert v == -1
+        for k in j.keys():
+            assert k == -1
+
+# TODO: Convert the missing doctests.

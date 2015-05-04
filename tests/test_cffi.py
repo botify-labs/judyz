@@ -103,6 +103,13 @@ def test_j1_from_list():
         assert n == 21
 
 
+def test_j1_signed():
+    with Judy1([-1]) as j:
+        assert -1 in j
+        for k in j:
+            assert k == -1
+
+
 def test_jl_bool():
     j = JudyL()
     assert not bool(j)
@@ -179,5 +186,19 @@ def test_jl_keys():
                 start = False
             i += 1
         assert i == 10
+
+
+def test_jl_signed():
+    with JudyL([(-1, -1)]) as j:
+        assert -1 in j
+        assert j[-1] == -1
+        for k, v in j:
+            assert k == -1
+            assert v == -1
+        for k, v in j.iteritems():
+            assert k == -1
+            assert v == -1
+        for k in j.keys():
+            assert k == -1
 
 # TODO: Convert the missing doctests.

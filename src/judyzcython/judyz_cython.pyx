@@ -65,17 +65,17 @@ cdef class Judy1:
             raise Exception("err={}".format(err.je_Errno))
         self._array = NULL
 
-    cpdef add(self, unsigned long index):
+    cpdef add(self, signed long index):
         cdef cjudy.JError_t err
         if cjudy.Judy1Set(&self._array, index, &err) == -1:
             raise Exception("err={}".format(err.je_Errno))
 
-    cpdef discard(self, unsigned long index):
+    cpdef discard(self, signed long index):
         cdef cjudy.JError_t err
         if cjudy.Judy1Unset(&self._array, index, &err) == -1:
             raise Exception("err={}".format(err.je_Errno))
 
-    cdef bint c_test(self, unsigned long index):
+    cdef bint c_test(self, signed long index):
         cdef cjudy.JError_t err
         cdef int rc
         rc = cjudy.Judy1Test(self._array, index, &err)
@@ -91,12 +91,12 @@ cdef class Judy1:
             raise Exception("err={}".format(err.je_Errno))
         return rc
 
-    cpdef remove(self, unsigned long index):
+    cpdef remove(self, signed long index):
         if not self.c_test(index):
             raise KeyError(index)
         self.discard(index)
 
-    def __contains__(self, unsigned long item):
+    def __contains__(self, signed long item):
         return self.c_test(item)
 
     def __len__(self):
@@ -116,7 +116,7 @@ cdef class Judy1Iterator:
     """
     cdef Judy1 _j1
     cdef cjudy.PJudy1_t _array
-    cdef unsigned long _index
+    cdef signed long _index
     cdef short int _start
 
     def __cinit__(self, Judy1 j1):
@@ -227,7 +227,7 @@ cdef class JudyL:
         cjudy.JudyLFreeArray(&self._array, NULL)
         self._array = NULL
 
-    # cdef cjudy.PPvoid_t ins(self, unsigned long index):
+    # cdef cjudy.PPvoid_t ins(self, signed long index):
     #     cdef cjudy.JError_t err
     #     cdef cjudy.PPvoid_t p
     #     p = cjudy.JudyLIns(&self._array, index, &err)
@@ -235,7 +235,7 @@ cdef class JudyL:
     #         raise Exception("err={}".format(err.je_Errno))
     #     return p
 
-    cdef void c_set(self, unsigned long index, unsigned long value):
+    cdef void c_set(self, signed long index, signed long value):
         cdef cjudy.PPvoid_t p
         cdef cjudy.JError_t err
         p = cjudy.JudyLIns(&self._array, index, &err)
@@ -243,7 +243,7 @@ cdef class JudyL:
             raise Exception("err={}".format(err.je_Errno))
         p[0] = <void*>value
 
-    cdef cjudy.PPvoid_t c_get(self, unsigned long index):
+    cdef cjudy.PPvoid_t c_get(self, signed long index):
         cdef cjudy.JError_t err
         cdef cjudy.PPvoid_t p
         p = cjudy.JudyLGet(self._array, index, &err)
@@ -251,14 +251,14 @@ cdef class JudyL:
             raise Exception("err={}".format(err.je_Errno))
         return p
 
-    cpdef unsigned long get(self, unsigned long index, unsigned long def_value=0):
+    cpdef signed long get(self, signed long index, signed long def_value=0):
         cdef cjudy.PPvoid_t p
         p = self.c_get(index)
         if p == NULL:
             return def_value
-        return <unsigned long>p[0]
+        return <signed long>p[0]
 
-    cdef unsigned long c_len(self):
+    cdef signed long c_len(self):
         cdef cjudy.JError_t err
         cdef int rc
         rc = cjudy.JudyLCount(self._array, 0, -1, &err)
@@ -266,22 +266,22 @@ cdef class JudyL:
             raise Exception("err={}".format(err.je_Errno))
         return rc
 
-    def __setitem__(self, unsigned long key, unsigned long value):
+    def __setitem__(self, signed long key, signed long value):
         self.c_set(key, value)
 
-    def __getitem__(self, unsigned long item):
+    def __getitem__(self, signed long item):
         cdef cjudy.PPvoid_t p
         p = self.c_get(item)
         if p == NULL:
             raise KeyError(item)
-        return <unsigned long>p[0]
+        return <signed long>p[0]
 
-    def __contains__(self, unsigned long item):
+    def __contains__(self, signed long item):
         cdef cjudy.PPvoid_t p
         p = self.c_get(item)
         return p != NULL
 
-    def __delitem__(self, unsigned long item):
+    def __delitem__(self, signed long item):
         cdef cjudy.JError_t err
         cdef int rc
         rc = cjudy.JudyLDel(&self._array, item, &err)
@@ -320,26 +320,26 @@ cdef class JudyL:
     def iteritems(self):
         cdef cjudy.JError_t err
         cdef cjudy.PPvoid_t p
-        cdef unsigned long index
+        cdef signed long index
         index = 0
         p = cjudy.JudyLFirst(self._array, &index, &err)
         if p == <cjudy.PPvoid_t>-1:
             raise Exception("err={}".format(err.je_Errno))
         if p == NULL:
             return
-        yield index, (<unsigned long*>p)[0]
+        yield index, (<signed long*>p)[0]
         while 1:
             p = cjudy.JudyLNext(self._array, &index, &err)
             if p == <cjudy.PPvoid_t>-1:
                 raise Exception("err={}".format(err.je_Errno))
             if p == NULL:
                 break
-            yield index, (<unsigned long*>p)[0]
+            yield index, (<signed long*>p)[0]
 
     def keys(self):
         cdef cjudy.JError_t err
         cdef cjudy.PPvoid_t p
-        cdef unsigned long index
+        cdef signed long index
         index = 0
         p = cjudy.JudyLFirst(self._array, &index, &err)
         if p == <cjudy.PPvoid_t>-1:
@@ -360,9 +360,9 @@ cdef class JudyLIterator:
     """
     Iterates on a JudyL.
     """
-    cdef JudyL j
+    cdef JudyL _j
     cdef cjudy.PJudyL_t _array
-    cdef unsigned long _index
+    cdef signed long _index
     cdef short int _start
 
     def __cinit__(self, JudyL j):
@@ -388,6 +388,6 @@ cdef class JudyLIterator:
         if p == NULL:
             raise StopIteration()
         self._index = index
-        return index, (<unsigned long*>p)[0]
+        return index, (<signed long*>p)[0]
 
 

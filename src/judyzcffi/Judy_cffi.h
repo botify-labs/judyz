@@ -67,7 +67,7 @@ typedef JudySL  ** PPJudySL_t;
 typedef const void * Pcvoid_t;
 typedef void *   Pvoid_t;
 typedef void ** PPvoid_t;
-typedef unsigned long    Word_t, * PWord_t;  // expect 32-bit or 64-bit words.
+typedef signed long    Word_t, * PWord_t;  // expect 32-bit or 64-bit words.
 
 // ****************************************************************************
 // SUPPORT FOR ERROR HANDLING:
