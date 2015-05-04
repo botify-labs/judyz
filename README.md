@@ -4,6 +4,7 @@ judyz is another Python wrapper for the [Judy](http://judy.sourceforge.net/)
 library.
 
 It's implemented using both [Cython](http://http://cython.org/) and
+implemented using both [Cython](http://http://cython.org/) and
 [CFFI](https://cffi.readthedocs.org/).
 
 `judyz-cython` must be compiled, unlike `judyz-cffi`.
