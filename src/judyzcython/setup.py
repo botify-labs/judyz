@@ -5,7 +5,7 @@ from Cython.Build import cythonize
 
 setup(
     name="judyz_cython",
-    version="0.3",
+    version="0.4.0",
     author="Yves Bastide",
     author_email="stid@acm.org",
     description="A Cython Judy wrapper",

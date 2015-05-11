@@ -14,8 +14,7 @@ path = os.path.dirname(
     os.path.abspath(inspect.getfile(inspect.currentframe())))
 sys.path.append(os.path.join(path, "../src/judyzcffi"))
 
-from judyz_cffi import Judy1
-from judyz_cffi import JudyL
+from judyz_cffi import (Judy1, JudyL, JudySL)
 
 
 def test_j1_compiled_ok():
@@ -155,7 +154,6 @@ def test_jl_from_dict():
 def test_jl_from_list():
     with JudyL([(10, 1), (2, 11)]) as j:
         d = dict(j)
-        print(d)
         assert d == {2L: 11L, 10L: 1L}
 
 
@@ -201,4 +199,12 @@ def test_jl_signed():
         for k in j.keys():
             assert k == -1
 
-# TODO: Convert the missing doctests.
+
+def test_jsl_1():
+    with JudySL() as j:
+        assert not j
+        assert len(j) == 0
+        j["toto"] = 1
+        assert j
+        assert len(j) == 1
+        assert "toto" in j
