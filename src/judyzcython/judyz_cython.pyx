@@ -6,9 +6,28 @@ cimport cjudy
 class JudyException(Exception):
     """Judy exception.
     """
+    _msgs = [
+        "None",
+        "Full",
+        "Out of Memory",
+        "Null PPArray",
+        "Null PIndex",
+        "Not a Judy1",
+        "Not a JudyL",
+        "Not a JudySL",
+        "Overrun",
+        "Corruption",
+        "Non-Null PPArray",
+        "Null PValue",
+        "Unsorted Indexes",
+    ]
+
     def __init__(self, errno):
         super(JudyException, self).__init__()
-        self.errno = errno
+        if 0 <= errno < len(JudyException._msgs):
+            self.errno = JudyException._msgs[errno]
+        else:
+            self.errno = errno
 
     def __repr__(self):
         return "<JudyException errno={}>".format(self.errno)
@@ -404,6 +423,49 @@ cdef class JudyLIterator:
         return index, (<cjudy.PWord_t>p)[0]
 
 
+class Cache(object):
+    """Cached binary buffer.
+
+    (More than) inspired from .Net StringBuilderCache:
+    http://referencesource.microsoft.com/#mscorlib/system/text/stringbuildercache.cs
+    """
+    MAX_BUILDER_SIZE = 360
+    # should be per-thread, if multithread :-)
+    # Does not need to be initialized, in fact (isn't in #mscorlib)
+    #cdef np.ndarray buf  # = np.zeros(MAX_BUILDER_SIZE, np.uint8)
+
+    # cdef public c_array.array byte_array_template
+    # cdef public c_array.array buf
+    byte_array_template = array('B', [])
+    buf = None
+
+    @staticmethod
+    def acquire(int capacity):
+        """Acquire a buffer of a particular size.
+
+        If we've got one in cache, returns it.
+        """
+        print("capacity={}".format(capacity))
+        if capacity <= Cache.MAX_BUILDER_SIZE:
+            b = Cache.buf
+            if b is not None:
+                if capacity <= len(b):
+                    Cache.buf = None
+                    return b
+        return c_array.clone(Cache.byte_array_template, capacity, zero=True)
+
+    @staticmethod
+    def release(buf):
+        """Release the buffer.
+
+        It must not be used thereafter.
+        """
+        if len(buf) <= Cache.MAX_BUILDER_SIZE:
+            Cache.buf = buf
+
+# Cache.byte_array_template = array('B', [])
+# Cache.buf = None
+
 cdef class JudySL:
     """
     JudySL class.
@@ -475,7 +537,7 @@ cdef class JudySL:
 
     def __setitem__(self, str key, signed long value):
         self.c_set(key, value)
-        cur_len = len(key)
+        cur_len = len(key) + 1
         if self._max_len < cur_len:
             self._max_len = cur_len
 
@@ -504,44 +566,30 @@ cdef class JudySL:
     def iteritems(self):
         cdef cjudy.JError_t err
         cdef cjudy.PPvoid_t p
-        cdef c_array.array[cjudy.uint8_t] index_array = array('B', '\0' * (self._max_len + 1))
-        cdef cjudy.uint8_t *index = index_array.data.as_uchars
         cdef cjudy.Word_t v
-        p = cjudy.JudySLFirst(self._array, index, &err)
-        if p == <cjudy.PPvoid_t> -1:
-            raise JudyException(err.je_Errno)
-        if p == NULL:
-            return
-        v = (<cjudy.PWord_t> p)[0]
-        yield index, v
-        while 1:
-            p = cjudy.JudySLNext(self._array, index, &err)
+        cdef c_array.array index = Cache.acquire(self._max_len)
+        try:
+            p = cjudy.JudySLFirst(self._array, index.data.as_uchars, &err)
             if p == <cjudy.PPvoid_t> -1:
                 raise JudyException(err.je_Errno)
-            if p == NULL:
-                break
-        v = (<cjudy.PWord_t> p)[0]
-        yield index, v
+            if p != NULL:
+                v = (<cjudy.PWord_t> p)[0]
+                yield index, v
+                while 1:
+                    p = cjudy.JudySLNext(self._array, index.data.as_uchars, &err)
+                    if p == <cjudy.PPvoid_t> -1:
+                        raise JudyException(err.je_Errno)
+                    if p == NULL:
+                        break
+                v = (<cjudy.PWord_t> p)[0]
+                yield index, v
+        finally:
+            Cache.release(index)
 
     def keys(self):
-        cdef cjudy.JError_t err
-        cdef cjudy.PPvoid_t p
-        cdef c_array.array[cjudy.uint8_t] index_array = array('B',
-                                                              '\0' * (self._max_len + 1))
-        cdef cjudy.uint8_t *index = index_array.data.as_uchars
-        p = cjudy.JudySLFirst(self._array, index, &err)
-        if p == <cjudy.PPvoid_t> -1:
-            raise JudyException(err.je_Errno)
-        if p == NULL:
-            return
-        yield index
-        while 1:
-            p = cjudy.JudySLNext(self._array, index, &err)
-            if p == <cjudy.PPvoid_t> -1:
-                raise JudyException(err.je_Errno)
-            if p == NULL:
-                break
-        yield index
+        for k, v in self.iteritems():
+            yield k
+
 
 cdef class JudySLIterator:
     """
@@ -549,29 +597,31 @@ cdef class JudySLIterator:
     """
     cdef JudySL _j
     cdef cjudy.PJudySL_t _array
-    cdef c_array.array[cjudy.uint8_t] index_array
-    cdef cjudy.uint8_t *_index
+    cdef c_array.array _index
     cdef short int _start
 
     def __cinit__(self, JudySL j):
         self._j = j
         self._array = j._array
         self._start = True
-        self.index_array = array('B', '\0' * (j._max_len + 1))
-        self._index = self._index_array.data.as_uchars
+        self._index = Cache.acquire(j._max_len)
+        print(self._index.data.as_uchars)
+
+    def __dealloc__(self):
+        Cache.release(self._index)
 
     def __iter__(self):
             return self
 
-    def next(self):
+    def __next__(self):
         cdef cjudy.JError_t err
         cdef cjudy.PPvoid_t p
         cdef cjudy.Word_t v
         if self._start:
-            p = cjudy.JudySLFirst(self._array, self._index, &err)
+            p = cjudy.JudySLFirst(self._array, self._index.data.as_uchars, &err)
             self._start = False
         else:
-            p = cjudy.JudySLNext(self._array, self._index, &err)
+            p = cjudy.JudySLNext(self._array, self._index.data.as_uchars, &err)
         if p == NULL:
             raise StopIteration()
         if p == <cjudy.PPvoid_t> -1:

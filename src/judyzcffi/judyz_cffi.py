@@ -34,6 +34,9 @@ def load():
     _ffi, _cjudy = ffi, cjudy
 
 
+load()
+
+
 class JudyException(Exception):
     """Judy exception.
     """
@@ -415,6 +418,3 @@ class JudySL(object):
             if p == _ffi.NULL:
                 break
             yield index[0]
-
-
-load()
