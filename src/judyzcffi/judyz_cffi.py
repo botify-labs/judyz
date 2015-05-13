@@ -275,29 +275,65 @@ class JudyL(object):
             yield index[0]
 
 
+class _Cache(object):
+    MAX_BUILDER_SIZE = 360
+    buf = None
+
+    @staticmethod
+    def acquire(capacity):
+        """Acquire a buffer of a particular size.
+
+        If we've got one in cache, returns it.
+        """
+        if capacity <= _Cache.MAX_BUILDER_SIZE:
+            b = _Cache.buf
+            if b is not None:
+                if capacity <= len(b):
+                    _Cache.buf = None
+                    b[0] = 0
+                    return b
+        return _ffi.new("unsigned char[%d]" % capacity)
+
+    @staticmethod
+    def release(buf):
+        """Release the buffer.
+
+        It must not be used thereafter.
+        """
+        if len(buf) <= _Cache.MAX_BUILDER_SIZE:
+            _Cache.buf = buf
+
+
 class JudySLIterator(object):
+    _STATE_FIRST = 0
+    _STATE_NEXT = 1
+    _STATE_END = 2
     def __init__(self, j):
         self._j = j
         self._array = j._array
-        self._start = True
-        self._index = _ffi.new("uint8_t*")
+        self._state = JudySLIterator._STATE_FIRST
+        self._index = _Cache.acquire(j._max_len)
 
     def __iter__(self):
         return self
 
     def next(self):
         err = _ffi.new("JError_t *")
-        if self._start:
+        if self._state == JudySLIterator._STATE_FIRST:
             p = _cjudy.JudySLFirst(self._array[0], self._index, err)
-            self._start = False
-        else:
+            self._state = JudySLIterator._STATE_NEXT
+        elif self._state == JudySLIterator._STATE_NEXT:
             p = _cjudy.JudySLNext(self._array[0], self._index, err)
+        else:
+            raise StopIteration()
         if p == _ffi.NULL:
+            _Cache.release(self._index)
+            self._state = JudySLIterator._STATE_END
             raise StopIteration()
         if p == JudySL.M1:
             raise JudyException(err.je_Errno)
         v = _ffi.cast("signed long", p[0])
-        return self._index[0], int(v)
+        return _ffi.string(self._index), int(v)
 
 
 class JudySL(object):
@@ -308,6 +344,7 @@ class JudySL(object):
 
     def __init__(self, other=None):
         self._array = _ffi.new("JudySL **")
+        self._max_len = 1
         if other:
             self.update(other)
 
@@ -332,14 +369,9 @@ class JudySL(object):
             raise JudyException(err.je_Errno)
 
     def __len__(self):
-        it = JudySLIterator(self)
         n = 0
-        while 1:
-            try:
-                next(it)
-                n += 1
-            except StopIteration:
-                break
+        for k, v in self.iteritems():
+            n += 1
         return n
 
     def __enter__(self):
@@ -354,6 +386,9 @@ class JudySL(object):
         if p == _ffi.NULL:
             raise JudyException(err.je_Errno)
         p[0] = _ffi.cast("void*", value)
+        klen = len(key) + 1
+        if self._max_len < klen:
+            self._max_len = klen
 
     def __getitem__(self, item):
         err = _ffi.new("JError_t *")
@@ -385,36 +420,27 @@ class JudySL(object):
 
     def iteritems(self):
         err = _ffi.new("JError_t *")
-        index = _ffi.new("signed long*")
-        p = _cjudy.JudySLFirst(self._array[0], index, err)
-        if p == JudySL.M1:
-            raise Exception("err={}".format(err.je_Errno))
-        if p == _ffi.NULL:
-            return
-        v = int(_ffi.cast("signed long", p[0]))
-        yield index[0], v
-        while 1:
-            p = _cjudy.JudySLNext(self._array[0], index, err)
+        index = _Cache.acquire(self._max_len) # _ffi.new("char[%d]" % self._max_len)
+        try:
+            p = _cjudy.JudySLFirst(self._array[0], index, err)
             if p == JudySL.M1:
                 raise Exception("err={}".format(err.je_Errno))
             if p == _ffi.NULL:
-                break
+                return
             v = int(_ffi.cast("signed long", p[0]))
-            yield index[0], v
+            yield _ffi.string(index), v
+            while 1:
+                p = _cjudy.JudySLNext(self._array[0], index, err)
+                if p == JudySL.M1:
+                    raise Exception("err={}".format(err.je_Errno))
+                if p == _ffi.NULL:
+                    break
+                v = int(_ffi.cast("signed long", p[0]))
+                yield _ffi.string(index), v
+        finally:
+            _Cache.release(index)
+            pass  # index cleaned by cffi
 
     def keys(self):
-        err = _ffi.new("JError_t *")
-        index = _ffi.new("signed long*")
-        p = _cjudy.JudySLFirst(self._array[0], index, err)
-        if p == JudySL.M1:
-            raise Exception("err={}".format(err.je_Errno))
-        if p == _ffi.NULL:
-            return
-        yield index[0]
-        while 1:
-            p = _cjudy.JudySLNext(self._array[0], index, err)
-            if p == JudySL.M1:
-                raise Exception("err={}".format(err.je_Errno))
-            if p == _ffi.NULL:
-                break
-            yield index[0]
+        for k, v in self.iteritems():
+            yield k

@@ -1,6 +1,7 @@
 from cpython cimport array as c_array
 from array import array
 cimport cjudy
+import sys
 
 
 class JudyException(Exception):
@@ -475,7 +476,7 @@ cdef class JudySL:
 
     def __cinit__(self, other=None):
         self._array = NULL
-        self._max_len = 0
+        self._max_len = 1
         if other:
             self.update(other)
 
@@ -605,7 +606,7 @@ cdef class JudySLIterator:
         self._array = j._array
         self._start = True
         self._index = Cache.acquire(j._max_len)
-        print(self._index.data.as_uchars)
+        # sys.stderr.write("data: {}\n".format(self._index.data.as_uchars))
 
     def __dealloc__(self):
         Cache.release(self._index)

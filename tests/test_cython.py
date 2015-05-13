@@ -208,3 +208,27 @@ def test_jsl_1():
         assert j
         assert len(j) == 1
         assert "toto" in j
+        assert j["toto"] == 1
+        assert list(j.keys()) == ["toto"]
+
+
+def test_jsl_2():
+    kv = [('bingo', 1), ('zlithoa', -1), ('all', 42)]
+    with JudySL(kv) as j:
+        assert len(j) == 3
+        jitems = list(j.iteritems())
+        assert jitems == sorted(kv)
+
+
+def test_jsl_3():
+    kv = [('a', 1), ('bb', 2), ('ccc', 3), ('dddd', 4), ('eeeee', 5)]
+    with JudySL(kv) as j:
+        jitems = list(j.iteritems())
+        assert jitems == kv
+
+
+def test_jsl_4():
+    kv = [('aaaaa', 1), ('bbbb', 2), ('ccc', 3), ('dd', 4), ('e', 5)]
+    with JudySL(kv) as j:
+        jitems = list(j.iteritems())
+        assert jitems == kv

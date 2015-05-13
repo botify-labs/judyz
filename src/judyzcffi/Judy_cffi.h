@@ -217,14 +217,14 @@ extern int      JudyLPrevEmpty(  PcJudyL_t  PArray, Word_t * PIndex,  PJError_t 
 // ****************************************************************************
 // JUDYSL FUNCTIONS:
 
-extern PPvoid_t JudySLGet(       PcJudySL_t, const uint8_t * Index, PJError_t PJError);
-extern PPvoid_t JudySLIns(       PPJudySL_t, const uint8_t * Index, PJError_t PJError);
-extern int      JudySLDel(       PPJudySL_t, const uint8_t * Index, PJError_t PJError);
-extern Word_t   JudySLFreeArray( PPJudySL_t,                        PJError_t PJError);
-extern PPvoid_t JudySLFirst(     PcJudySL_t,       uint8_t * Index, PJError_t PJError);
-extern PPvoid_t JudySLNext(      PcJudySL_t,       uint8_t * Index, PJError_t PJError);
-extern PPvoid_t JudySLLast(      PcJudySL_t,       uint8_t * Index, PJError_t PJError);
-extern PPvoid_t JudySLPrev(      PcJudySL_t,       uint8_t * Index, PJError_t PJError);
+extern PPvoid_t JudySLGet(       PcJudySL_t, const unsigned char* Index, PJError_t PJError);
+extern PPvoid_t JudySLIns(       PPJudySL_t, const unsigned char* Index, PJError_t PJError);
+extern int      JudySLDel(       PPJudySL_t, const unsigned char* Index, PJError_t PJError);
+extern Word_t   JudySLFreeArray( PPJudySL_t,                     PJError_t PJError);
+extern PPvoid_t JudySLFirst(     PcJudySL_t,       unsigned char* Index, PJError_t PJError);
+extern PPvoid_t JudySLNext(      PcJudySL_t,       unsigned char* Index, PJError_t PJError);
+extern PPvoid_t JudySLLast(      PcJudySL_t,       unsigned char* Index, PJError_t PJError);
+extern PPvoid_t JudySLPrev(      PcJudySL_t,       unsigned char* Index, PJError_t PJError);
 
 // ****************************************************************************
 // JUDYHSL FUNCTIONS:
