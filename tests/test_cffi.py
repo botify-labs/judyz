@@ -14,8 +14,7 @@ path = os.path.dirname(
     os.path.abspath(inspect.getfile(inspect.currentframe())))
 sys.path.append(os.path.join(path, "../src/judyzcffi"))
 
-from judyz_cffi import Judy1
-from judyz_cffi import JudyL
+from judyz_cffi import (Judy1, JudyL, JudySL)
 
 
 def test_j1_compiled_ok():
@@ -155,7 +154,6 @@ def test_jl_from_dict():
 def test_jl_from_list():
     with JudyL([(10, 1), (2, 11)]) as j:
         d = dict(j)
-        print(d)
         assert d == {2L: 11L, 10L: 1L}
 
 
@@ -201,4 +199,84 @@ def test_jl_signed():
         for k in j.keys():
             assert k == -1
 
-# TODO: Convert the missing doctests.
+
+def test_jsl_1():
+    with JudySL() as j:
+        assert not j
+        assert len(j) == 0
+        j["toto"] = 1
+        assert j
+        assert len(j) == 1
+        assert "toto" in j
+        assert j["toto"] == 1
+        assert list(j.keys()) == ["toto"]
+
+
+def test_jsl_2():
+    kv = [('bingo', 1), ('zlithoa', -1), ('all', 42)]
+    with JudySL(kv) as j:
+        assert len(j) == 3
+        jitems = list(j.iteritems())
+        assert jitems == sorted(kv)
+
+
+def test_jsl_3():
+    kv = [('a', 1), ('bb', 2), ('ccc', 3), ('dddd', 4), ('eeeee', 5)]
+    with JudySL(kv) as j:
+        jitems = list(j.iteritems())
+        assert jitems == kv
+
+
+def test_jsl_4():
+    kv = [('aaaaa', 1), ('bbbb', 2), ('ccc', 3), ('dd', 4), ('e', 5)]
+    with JudySL(kv) as j:
+        jitems = list(j.iteritems())
+        assert jitems == kv
+
+
+def test_jsl_first_next():
+    kv = [('bbbb', 2), ('aaaaa', 1), ('ccc', 3), ('dd', 4), ('e', 5)]
+    with JudySL(kv) as j:
+        key, value, buf = j.get_first()
+        assert key == 'aaaaa'
+        assert value == 1
+        key, value, buf = j.get_next(buf)
+        assert key == 'bbbb'
+        assert value == 2
+        key, value, buf = j.get_next(buf)
+        assert key == 'ccc'
+        assert value == 3
+        key, value, buf = j.get_next(buf)
+        assert key == 'dd'
+        assert value == 4
+        key, value, buf = j.get_next(buf)
+        assert key == 'e'
+        assert value == 5
+        key, value, buf = j.get_next(buf)
+        assert key is None
+        assert value is None
+        key, value, buf = j.get_next(buf)
+        assert key is None
+        assert value is None
+
+
+def jdsn(fd):
+    """
+    Sort and count the lines in a file(-like object)
+    :return:
+    :rtype:
+    """
+    with JudySL() as j:
+        for line in fd:
+            line = line.rstrip('\n')
+            j.inc(line)
+        for k, v in j:
+            print('{}\t{}'.format(k, v))
+
+
+if __name__ == "__main__":
+    if len(sys.argv) > 0:
+        with open(sys.argv[0]) as fd:
+            jdsn(fd)
+    else:
+        jdsn(sys.stdin)
