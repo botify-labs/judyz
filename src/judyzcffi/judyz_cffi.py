@@ -37,16 +37,35 @@ def load():
 load()
 
 
-class JudyException(Exception):
-    """Judy exception.
+class JudyError(Exception):
+    """Judy error.
     """
 
+    _msgs = [
+        "None",
+        "Full",
+        "Out of Memory",
+        "Null PPArray",
+        "Null PIndex",
+        "Not a Judy1",
+        "Not a JudyL",
+        "Not a JudySL",
+        "Overrun",
+        "Corruption",
+        "Non-Null PPArray",
+        "Null PValue",
+        "Unsorted Indexes",
+    ]
+
     def __init__(self, errno):
-        super(JudyException, self).__init__()
-        self.errno = errno
-        
-    def __repr__(self):
-        return "<JudyException errno={}>".format(self.errno)
+        super(JudyError, self).__init__()
+        if 0 <= errno < len(JudyError._msgs):
+            self.message = JudyError._msgs[errno]
+        else:
+            self.message = "Error {}".format(errno)
+
+    def __str__(self):
+        return self.message
 
 
 class Judy1Iterator(object):
@@ -69,7 +88,7 @@ class Judy1Iterator(object):
         if rc == 0:
             raise StopIteration()
         if rc == -1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         return self._index[0]
 
 
@@ -86,18 +105,18 @@ class Judy1(object):
     def add(self, item):
         err = _ffi.new("JError_t *")
         if _cjudy.Judy1Set(self._array, item, err) == -1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
 
     def clear(self):
         err = _ffi.new("JError_t *")
         if _cjudy.Judy1FreeArray(self._array, err) == -1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
 
     def _get(self, item):
         err = _ffi.new("JError_t *")
         rc = _cjudy.Judy1Test(self._array[0], item, err)
         if rc == -1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         return rc
 
     def __contains__(self, item):
@@ -107,7 +126,7 @@ class Judy1(object):
         err = _ffi.new("JError_t *")
         rc = _cjudy.Judy1Count(self._array[0], 0, -1, err)
         if rc == -1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         return rc
 
     def __enter__(self):
@@ -120,7 +139,7 @@ class Judy1(object):
         err = _ffi.new("JError_t *")
         rc = _cjudy.Judy1Unset(self._array, item, err)
         if rc == -1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
 
     def remove(self, item):
         err = _ffi.new("JError_t *")
@@ -128,7 +147,7 @@ class Judy1(object):
         if rc == 0:
             raise KeyError(item)
         if rc == -1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
 
     def __iter__(self):
         return Judy1Iterator(self)
@@ -154,7 +173,7 @@ class JudyLIterator(object):
         if p == _ffi.NULL:
             raise StopIteration()
         if p == JudyL.M1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         v = _ffi.cast("signed long", p[0])
         return self._index[0], int(v)
 
@@ -188,13 +207,13 @@ class JudyL(object):
     def clear(self):
         err = _ffi.new("JError_t *")
         if _cjudy.JudyLFreeArray(self._array, err) == -1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
 
     def __len__(self):
         err = _ffi.new("JError_t *")
         rc = _cjudy.JudyLCount(self._array[0], 0, -1, err)
         if rc == -1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         return rc
 
     def __enter__(self):
@@ -207,7 +226,7 @@ class JudyL(object):
         err = _ffi.new("JError_t *")
         p = _cjudy.JudyLIns(self._array, key, err)
         if p == _ffi.NULL:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         p[0] = _ffi.cast("void*", value)
 
     def __getitem__(self, item):
@@ -216,14 +235,14 @@ class JudyL(object):
         if p == _ffi.NULL:
             raise KeyError(item)
         if p == JudyL.M1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         return int(_ffi.cast("signed long", p[0]))
 
     def __contains__(self, item):
         err = _ffi.new("JError_t *")
         p = _cjudy.JudyLGet(self._array[0], item, err)
         if p == JudyL.M1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         return p != _ffi.NULL
 
     def get(self, item, default_value=0):
@@ -232,7 +251,7 @@ class JudyL(object):
         if p == _ffi.NULL:
             return default_value
         if p == JudyL.M1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         return int(_ffi.cast("signed long", p[0]))
 
     def __iter__(self):
@@ -331,7 +350,7 @@ class JudySLIterator(object):
             self._state = JudySLIterator._STATE_END
             raise StopIteration()
         if p == JudySL.M1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         v = _ffi.cast("signed long", p[0])
         return _ffi.string(self._index), int(v)
 
@@ -366,7 +385,7 @@ class JudySL(object):
     def clear(self):
         err = _ffi.new("JError_t *")
         if _cjudy.JudySLFreeArray(self._array, err) == -1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
 
     def __len__(self):
         n = 0
@@ -384,7 +403,7 @@ class JudySL(object):
         err = _ffi.new("JError_t *")
         p = _cjudy.JudySLIns(self._array, key, err)
         if p == _ffi.NULL:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         p[0] = _ffi.cast("void*", value)
         klen = len(key) + 1
         if self._max_len < klen:
@@ -394,7 +413,7 @@ class JudySL(object):
         err = _ffi.new("JError_t *")
         p = _cjudy.JudySLIns(self._array, key, err)
         if p == _ffi.NULL:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         p[0] = _ffi.cast("void*", int(_ffi.cast("long", p[0])) + 1)
         klen = len(key) + 1
         if self._max_len < klen:
@@ -406,14 +425,14 @@ class JudySL(object):
         if p == _ffi.NULL:
             raise KeyError(item)
         if p == JudySL.M1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         return int(_ffi.cast("signed long", p[0]))
 
     def __contains__(self, item):
         err = _ffi.new("JError_t *")
         p = _cjudy.JudySLGet(self._array[0], item, err)
         if p == JudySL.M1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         return p != _ffi.NULL
 
     def get(self, item, default_value=0):
@@ -422,7 +441,7 @@ class JudySL(object):
         if p == _ffi.NULL:
             return default_value
         if p == JudySL.M1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         return int(_ffi.cast("signed long", p[0]))
 
     def __iter__(self):

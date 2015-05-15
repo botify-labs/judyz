@@ -4,7 +4,7 @@ cimport cjudy
 import sys
 
 
-class JudyException(Exception):
+class JudyError(Exception):
     """Judy exception.
     """
     _msgs = [
@@ -24,14 +24,14 @@ class JudyException(Exception):
     ]
 
     def __init__(self, errno):
-        super(JudyException, self).__init__()
-        if 0 <= errno < len(JudyException._msgs):
-            self.errno = JudyException._msgs[errno]
+        super(JudyError, self).__init__()
+        if 0 <= errno < len(JudyError._msgs):
+            self.message = JudyError._msgs[errno]
         else:
-            self.errno = errno
+            self.message = "Error {}".format(errno)
 
-    def __repr__(self):
-        return "<JudyException errno={}>".format(self.errno)
+    def __str__(self):
+        return self.message
 
 
 cdef class Judy1:
@@ -95,25 +95,25 @@ cdef class Judy1:
     cpdef clear(self):
         cdef cjudy.JError_t err
         if cjudy.Judy1FreeArray(&self._array, NULL) == -1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         self._array = NULL
 
     cpdef add(self, signed long index):
         cdef cjudy.JError_t err
         if cjudy.Judy1Set(&self._array, index, &err) == -1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
 
     cpdef discard(self, signed long index):
         cdef cjudy.JError_t err
         if cjudy.Judy1Unset(&self._array, index, &err) == -1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
 
     cdef bint c_test(self, signed long index):
         cdef cjudy.JError_t err
         cdef int rc
         rc = cjudy.Judy1Test(self._array, index, &err)
         if rc == -1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         return rc
 
     cdef long c_len(self):
@@ -121,7 +121,7 @@ cdef class Judy1:
         cdef int rc
         rc = cjudy.Judy1Count(self._array, 0, -1, &err)
         if rc == 0 and err.je_Errno:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         return rc
 
     cpdef remove(self, signed long index):
@@ -171,7 +171,7 @@ cdef class Judy1Iterator:
         else:
             rc = cjudy.Judy1Next(self._array, &index, &err)
         if rc == -1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         if rc == 0:
             raise StopIteration()
         self._index = index
@@ -265,7 +265,7 @@ cdef class JudyL:
     #     cdef cjudy.PPvoid_t p
     #     p = cjudy.JudyLIns(&self._array, index, &err)
     #     if p == NULL:
-    #         raise JudyException(err.je_Errno)
+    #         raise JudyError(err.je_Errno)
     #     return p
 
     cdef void c_set(self, signed long index, signed long value):
@@ -273,7 +273,7 @@ cdef class JudyL:
         cdef cjudy.JError_t err
         p = cjudy.JudyLIns(&self._array, index, &err)
         if p == NULL:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         p[0] = <void*>value
 
     cdef cjudy.PPvoid_t c_get(self, signed long index):
@@ -281,7 +281,7 @@ cdef class JudyL:
         cdef cjudy.PPvoid_t p
         p = cjudy.JudyLGet(self._array, index, &err)
         if p == <cjudy.PPvoid_t>-1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         return p
 
     cpdef signed long get(self, signed long index, signed long def_value=0):
@@ -296,7 +296,7 @@ cdef class JudyL:
         cdef int rc
         rc = cjudy.JudyLCount(self._array, 0, -1, &err)
         if rc == 0 and err.je_Errno:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         return rc
 
     def __setitem__(self, signed long key, signed long value):
@@ -319,7 +319,7 @@ cdef class JudyL:
         cdef int rc
         rc = cjudy.JudyLDel(&self._array, item, &err)
         if rc == -1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
 
     def __len__(self):
         return self.c_len()
@@ -357,14 +357,14 @@ cdef class JudyL:
         index = 0
         p = cjudy.JudyLFirst(self._array, &index, &err)
         if p == <cjudy.PPvoid_t>-1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         if p == NULL:
             return
         yield index, (<cjudy.PWord_t>p)[0]
         while 1:
             p = cjudy.JudyLNext(self._array, &index, &err)
             if p == <cjudy.PPvoid_t>-1:
-                raise JudyException(err.je_Errno)
+                raise JudyError(err.je_Errno)
             if p == NULL:
                 break
             yield index, (<cjudy.PWord_t>p)[0]
@@ -376,14 +376,14 @@ cdef class JudyL:
         index = 0
         p = cjudy.JudyLFirst(self._array, &index, &err)
         if p == <cjudy.PPvoid_t>-1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         if p == NULL:
             return
         yield index
         while 1:
             p = cjudy.JudyLNext(self._array, &index, &err)
             if p == <cjudy.PPvoid_t>-1:
-                raise JudyException(err.je_Errno)
+                raise JudyError(err.je_Errno)
             if p == NULL:
                 break
             yield index
@@ -417,7 +417,7 @@ cdef class JudyLIterator:
         else:
             p = cjudy.JudyLNext(self._array, &index, &err)
         if p == <cjudy.PPvoid_t>-1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         if p == NULL:
             raise StopIteration()
         self._index = index
@@ -503,7 +503,7 @@ cdef class JudySL:
         cdef cjudy.JError_t err
         p = cjudy.JudySLIns(&self._array, index, &err)
         if p == NULL:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         p[0] = <cjudy.PPvoid_t> value
 
     cdef cjudy.PPvoid_t c_get(self, cjudy.uint8_t* index):
@@ -511,7 +511,7 @@ cdef class JudySL:
         cdef cjudy.PPvoid_t p
         p = cjudy.JudySLGet(self._array, index, &err)
         if p == <cjudy.PPvoid_t> -1:
-            raise JudyException(err.je_Errno)
+            raise JudyError(err.je_Errno)
         return p
 
     def clear(self):
@@ -572,14 +572,14 @@ cdef class JudySL:
         try:
             p = cjudy.JudySLFirst(self._array, index.data.as_uchars, &err)
             if p == <cjudy.PPvoid_t> -1:
-                raise JudyException(err.je_Errno)
+                raise JudyError(err.je_Errno)
             if p != NULL:
                 v = (<cjudy.PWord_t> p)[0]
                 yield index, v
                 while 1:
                     p = cjudy.JudySLNext(self._array, index.data.as_uchars, &err)
                     if p == <cjudy.PPvoid_t> -1:
-                        raise JudyException(err.je_Errno)
+                        raise JudyError(err.je_Errno)
                     if p == NULL:
                         break
                 v = (<cjudy.PWord_t> p)[0]
@@ -626,6 +626,6 @@ cdef class JudySLIterator:
         if p == NULL:
             raise StopIteration()
         if p == <cjudy.PPvoid_t> -1:
-            raise Exception(err.je_Errno)
+            raise JudyError(err.je_Errno)
         v = (<cjudy.PWord_t> p)[0]
         return self._index, int(v)
