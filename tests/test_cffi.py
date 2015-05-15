@@ -232,3 +232,15 @@ def test_jsl_4():
     with JudySL(kv) as j:
         jitems = list(j.iteritems())
         assert jitems == kv
+
+def jdsn():
+    with JudySL() as j:
+        for line in sys.stdin:
+            line = line.rstrip('\n')
+            j.inc(line)
+        for k, v in j:
+            print('{}\t{}'.format(k, v))
+
+
+if __name__ == "__main__":
+    jdsn()

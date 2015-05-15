@@ -444,3 +444,13 @@ class JudySL(object):
     def keys(self):
         for k, v in self.iteritems():
             yield k
+
+    def inc(self, key):
+        err = _ffi.new("JError_t *")
+        p = _cjudy.JudySLIns(self._array, key, err)
+        if p == _ffi.NULL:
+            raise JudyException(err.je_Errno)
+        p[0] = _ffi.cast("void*", int(_ffi.cast("long", p[0])) + 1)
+        klen = len(key) + 1
+        if self._max_len < klen:
+            self._max_len = klen
