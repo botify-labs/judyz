@@ -15,6 +15,7 @@ def skipped(func):
 
     def _():
         raise SkipTest("Test %s is skipped" % func.__name__)
+        pass
 
     _.__name__ = func.__name__
     return _

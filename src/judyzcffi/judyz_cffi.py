@@ -275,7 +275,7 @@ class JudyL(object):
             yield index[0]
 
 
-class _Cache(object):
+class StringCache(object):
     MAX_BUILDER_SIZE = 360
     buf = None
 
@@ -285,11 +285,11 @@ class _Cache(object):
 
         If we've got one in cache, returns it.
         """
-        if capacity <= _Cache.MAX_BUILDER_SIZE:
-            b = _Cache.buf
+        if capacity <= StringCache.MAX_BUILDER_SIZE:
+            b = StringCache.buf
             if b is not None:
                 if capacity <= len(b):
-                    _Cache.buf = None
+                    StringCache.buf = None
                     b[0] = 0
                     return b
         return _ffi.new("unsigned char[%d]" % capacity)
@@ -300,8 +300,8 @@ class _Cache(object):
 
         It must not be used thereafter.
         """
-        if len(buf) <= _Cache.MAX_BUILDER_SIZE:
-            _Cache.buf = buf
+        if len(buf) <= StringCache.MAX_BUILDER_SIZE:
+            StringCache.buf = buf
 
 
 class JudySLIterator(object):
@@ -312,7 +312,7 @@ class JudySLIterator(object):
         self._j = j
         self._array = j._array
         self._state = JudySLIterator._STATE_FIRST
-        self._index = _Cache.acquire(j._max_len)
+        self._index = StringCache.acquire(j._max_len)
 
     def __iter__(self):
         return self
@@ -327,7 +327,7 @@ class JudySLIterator(object):
         else:
             raise StopIteration()
         if p == _ffi.NULL:
-            _Cache.release(self._index)
+            StringCache.release(self._index)
             self._state = JudySLIterator._STATE_END
             raise StopIteration()
         if p == JudySL.M1:
@@ -390,6 +390,16 @@ class JudySL(object):
         if self._max_len < klen:
             self._max_len = klen
 
+    def inc(self, key):
+        err = _ffi.new("JError_t *")
+        p = _cjudy.JudySLIns(self._array, key, err)
+        if p == _ffi.NULL:
+            raise JudyException(err.je_Errno)
+        p[0] = _ffi.cast("void*", int(_ffi.cast("long", p[0])) + 1)
+        klen = len(key) + 1
+        if self._max_len < klen:
+            self._max_len = klen
+
     def __getitem__(self, item):
         err = _ffi.new("JError_t *")
         p = _cjudy.JudySLGet(self._array[0], item, err)
@@ -420,7 +430,7 @@ class JudySL(object):
 
     def iteritems(self):
         err = _ffi.new("JError_t *")
-        index = _Cache.acquire(self._max_len) # _ffi.new("char[%d]" % self._max_len)
+        index = StringCache.acquire(self._max_len) # _ffi.new("char[%d]" % self._max_len)
         try:
             p = _cjudy.JudySLFirst(self._array[0], index, err)
             if p == JudySL.M1:
@@ -438,19 +448,49 @@ class JudySL(object):
                 v = int(_ffi.cast("signed long", p[0]))
                 yield _ffi.string(index), v
         finally:
-            _Cache.release(index)
-            pass  # index cleaned by cffi
+            StringCache.release(index)
 
     def keys(self):
         for k, v in self.iteritems():
             yield k
 
-    def inc(self, key):
+    def get_first(self, buf=None):
+        """
+        Get the first item in the JudySL
+        :param buf: None...
+        :return: (key, value, internal "iterator" for get_next) or (None, None, None)
+        :rtype: tuple
+        """
         err = _ffi.new("JError_t *")
-        p = _cjudy.JudySLIns(self._array, key, err)
+        if buf is None:
+            buf = StringCache.acquire(self._max_len)
+        p = _cjudy.JudySLFirst(self._array[0], buf, err)
+        if p == JudySL.M1:
+            StringCache.release(buf)
+            raise Exception("err={}".format(err.je_Errno))
         if p == _ffi.NULL:
-            raise JudyException(err.je_Errno)
-        p[0] = _ffi.cast("void*", int(_ffi.cast("long", p[0])) + 1)
-        klen = len(key) + 1
-        if self._max_len < klen:
-            self._max_len = klen
+            StringCache.release(buf)
+            return None, None, None
+        v = int(_ffi.cast("signed long", p[0]))
+        return _ffi.string(buf), v, buf
+
+    def get_next(self, buf):
+        """
+        Get the next item in the JudySL
+        :param buf: internal "iterator" returned by get_first or get_next
+        :type buf:
+        :return: (key, value, internal "iterator" for get_next) or (None, None, None)
+        :rtype: tuple
+        """
+        if buf is None:
+            return None, None, None
+        err = _ffi.new("JError_t *")
+        p = _cjudy.JudySLNext(self._array[0], buf, err)
+        if p == JudySL.M1:
+            StringCache.release(buf)
+            raise Exception("err={}".format(err.je_Errno))
+        if p == _ffi.NULL:
+            StringCache.release(buf)
+            return None, None, None
+        v = int(_ffi.cast("signed long", p[0]))
+        return _ffi.string(buf), v, buf

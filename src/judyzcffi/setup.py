@@ -15,7 +15,7 @@ for scheme in INSTALL_SCHEMES.values():
 
 setup(
     name="judyz-cffi",
-    version="0.5.1",
+    version="0.6.0",
     py_modules=["judyz_cffi"],
     author="Yves Bastide",
     author_email="stid@acm.org",

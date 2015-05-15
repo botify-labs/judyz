@@ -233,9 +233,41 @@ def test_jsl_4():
         jitems = list(j.iteritems())
         assert jitems == kv
 
-def jdsn():
+
+def test_jsl_first_next():
+    kv = [('bbbb', 2), ('aaaaa', 1), ('ccc', 3), ('dd', 4), ('e', 5)]
+    with JudySL(kv) as j:
+        key, value, buf = j.get_first()
+        assert key == 'aaaaa'
+        assert value == 1
+        key, value, buf = j.get_next(buf)
+        assert key == 'bbbb'
+        assert value == 2
+        key, value, buf = j.get_next(buf)
+        assert key == 'ccc'
+        assert value == 3
+        key, value, buf = j.get_next(buf)
+        assert key == 'dd'
+        assert value == 4
+        key, value, buf = j.get_next(buf)
+        assert key == 'e'
+        assert value == 5
+        key, value, buf = j.get_next(buf)
+        assert key is None
+        assert value is None
+        key, value, buf = j.get_next(buf)
+        assert key is None
+        assert value is None
+
+
+def jdsn(fd):
+    """
+    Sort and count the lines in a file(-like object)
+    :return:
+    :rtype:
+    """
     with JudySL() as j:
-        for line in sys.stdin:
+        for line in fd:
             line = line.rstrip('\n')
             j.inc(line)
         for k, v in j:
@@ -243,4 +275,8 @@ def jdsn():
 
 
 if __name__ == "__main__":
-    jdsn()
+    if len(sys.argv) > 0:
+        with open(sys.argv[0]) as fd:
+            jdsn(fd)
+    else:
+        jdsn(sys.stdin)
