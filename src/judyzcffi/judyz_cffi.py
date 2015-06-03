@@ -6,17 +6,18 @@ Déps:
 python-cffi
 """
 
-from cffi import FFI
-from os import path
-
-JUDY_CFFI_H = "Judy_cffi.h"
-
 
 def load():
+    from cffi import FFI
+    from os import path
+
+    JUDY_CFFI_H = "Judy_cffi.h"
+
     global _ffi, _cjudy
     from pkg_resources import (
         Requirement, resource_filename, DistributionNotFound
     )
+
     try:
         filename = resource_filename(
             Requirement.parse("judy-cffi"), JUDY_CFFI_H)
@@ -35,7 +36,6 @@ def load():
 
 
 load()
-
 
 class JudyError(Exception):
     """Judy error.
@@ -96,6 +96,7 @@ class Judy1(object):
     """
     Judy1 class.
     """
+
     def __init__(self, iterable=None):
         self._array = _ffi.new("Judy1 **")
         if iterable:
@@ -254,6 +255,13 @@ class JudyL(object):
             raise JudyError(err.je_Errno)
         return int(_ffi.cast("signed long", p[0]))
 
+    def inc(self, key, value=1):
+        err = _ffi.new("JError_t *")
+        p = _cjudy.JudyLIns(self._array, key, err)
+        if p == _ffi.NULL:
+            raise JudyError(err.je_Errno)
+        p[0] = int(_ffi.cast("signed long", p[0])) + _ffi.cast("void*", value)
+
     def __iter__(self):
         return JudyLIterator(self)
 
@@ -327,6 +335,7 @@ class JudySLIterator(object):
     _STATE_FIRST = 0
     _STATE_NEXT = 1
     _STATE_END = 2
+
     def __init__(self, j):
         self._j = j
         self._array = j._array
@@ -449,7 +458,7 @@ class JudySL(object):
 
     def iteritems(self):
         err = _ffi.new("JError_t *")
-        index = StringCache.acquire(self._max_len) # _ffi.new("char[%d]" % self._max_len)
+        index = StringCache.acquire(self._max_len)  # _ffi.new("char[%d]" % self._max_len)
         try:
             p = _cjudy.JudySLFirst(self._array[0], index, err)
             if p == JudySL.M1:

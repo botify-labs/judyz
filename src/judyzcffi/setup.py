@@ -1,6 +1,4 @@
 from distutils.command.install import INSTALL_SCHEMES
-
-__author__ = 'zeb'
 from distutils.core import setup
 # from setuptools import setup
 
@@ -15,7 +13,7 @@ for scheme in INSTALL_SCHEMES.values():
 
 setup(
     name="judyz-cffi",
-    version="0.6.0",
+    version="0.7.0",
     py_modules=["judyz_cffi"],
     author="Yves Bastide",
     author_email="stid@acm.org",

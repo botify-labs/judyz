@@ -199,6 +199,14 @@ def test_jl_signed():
         for k in j.keys():
             assert k == -1
 
+def test_jl_inc():
+    with JudyL() as j:
+        j[1] = 2
+        j.inc(1)
+        assert j[1] == 3
+        j.inc(1, 10)
+        assert j[1] == 13
+
 
 def test_jsl_1():
     with JudySL() as j:
