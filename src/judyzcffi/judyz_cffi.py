@@ -8,34 +8,15 @@ python-cffi
 
 
 def load():
-    from cffi import FFI
-    from os import path
-
-    JUDY_CFFI_H = "Judy_cffi.h"
-
     global _ffi, _cjudy
-    from pkg_resources import (
-        Requirement, resource_filename, DistributionNotFound
-    )
-
-    try:
-        filename = resource_filename(
-            Requirement.parse("judy-cffi"), JUDY_CFFI_H)
-        open(filename)
-    except (DistributionNotFound, IOError):
-        if path.exists(JUDY_CFFI_H):
-            filename = JUDY_CFFI_H
-        else:
-            p = path.dirname(__file__)
-            filename = path.join(p, JUDY_CFFI_H)
-    # print "*** filename =", filename
-    ffi = FFI()
-    ffi.cdef(open(filename).read())
-    cjudy = ffi.dlopen("Judy")
+    import ctypes.util
+    from _judy_cffi import ffi
+    cjudy = ffi.dlopen(ctypes.util.find_library("Judy"))
     _ffi, _cjudy = ffi, cjudy
 
 
 load()
+
 
 class JudyError(Exception):
     """Judy error.

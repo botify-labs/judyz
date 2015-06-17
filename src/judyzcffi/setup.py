@@ -1,19 +1,8 @@
-from distutils.command.install import INSTALL_SCHEMES
-from distutils.core import setup
-# from setuptools import setup
-
-# you must import at least the module(s) that define the ffi's
-# that you use in your application
-# noinspection PyUnresolvedReferences
-import judyz_cffi
-
-# From http://stackoverflow.com/questions/1612733/including-non-python-files-with-setup-py
-for scheme in INSTALL_SCHEMES.values():
-    scheme['data'] = scheme['purelib']
+from setuptools import setup
 
 setup(
     name="judyz-cffi",
-    version="0.7.0",
+    version="0.8.0",
     py_modules=["judyz_cffi"],
     author="Yves Bastide",
     author_email="stid@acm.org",
@@ -24,16 +13,7 @@ setup(
         # none
         # judy_cffi._ffi.verifier.get_extension(),
     ],
-    install_requires=[
-        "cffi",
-    ],
-    zip_safe=False,
-    include_package_data=True,
-    # package_data={
-    #     "judy_cffi": ['Judy_cffi.h'],
-    #     "judy-cffi": ['Judy_cffi.h'],
-    #     },
-    data_files=[
-        ('', ['Judy_cffi.h']),
-    ],
+    setup_requires=["cffi>=1.0.0"],
+    cffi_modules=["judy_cffi_build.py:ffi"],
+    install_requires=["cffi>=1.0.0"],
 )
