@@ -1,11 +1,12 @@
 # judyz
 
-judyz is another Python wrapper for the [Judy](http://judy.sourceforge.net/)
+judyz is another (pair of) Python wrapper(s) for the [Judy](http://judy.sourceforge.net/)
 library.
 
-It's implemented using both [Cython](http://http://cython.org/) and
-implemented using both [Cython](http://http://cython.org/) and
-[CFFI](https://cffi.readthedocs.org/).
+It implements both a [CFFI](https://cffi.readthedocs.org/) and a [Cython](http://http://cython.org/)
+wrapper.
+
+Note that the Cython wrapper is currently unmaintained: it doesn't work with PyPy, unlike CFFI.
 
 `judyz-cython` must be compiled, unlike `judyz-cffi`.
 
@@ -14,7 +15,7 @@ implemented using both [Cython](http://http://cython.org/) and
 * libjudy-dev
 * cython
 * libffi-dev
-* python-cffi
+* python-cffi (or pypy)
 * ...
 
 
@@ -47,5 +48,5 @@ If `pip install` doesn't work:
 
 ## Usage Requirements
 
-* libjudydebian1
+* libjudydebian1 (not the Ubuntu 14.04 buggy one)
 * `judyz-cffi`: libffi6
