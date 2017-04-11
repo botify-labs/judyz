@@ -2,10 +2,10 @@
 
 from cffi import FFI
 
-JUDY_CFFI_H = "Judy_cffi.h"
+JUDY_CFFI_H = "judyz_cffi/Judy_cffi.h"
 
 ffi = FFI()
-ffi.set_source("_judy_cffi", None)
+ffi.set_source("judyz_cffi._judy_cffi", None)
 
 
 ffi.cdef(open(JUDY_CFFI_H).read())
