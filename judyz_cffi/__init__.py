@@ -1,9 +1,5 @@
-# -*- coding: utf-8 -*-
 """
 CFFI loader for Judy.
-
-Déps:
-python-cffi
 """
 
 
@@ -13,7 +9,6 @@ def load():
     from _judy_cffi import ffi
     cjudy = ffi.dlopen(ctypes.util.find_library("Judy"))
     _ffi, _cjudy = ffi, cjudy
-
 
 load()
 
