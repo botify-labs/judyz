@@ -4,14 +4,16 @@ from setuptools import setup
 
 
 def read(fname):
-    with io.open(fname, encoding='utf8') as fp:
+    with io.open(fname, encoding="utf8") as fp:
         content = fp.read()
     return content
 
+
 setup(
     name="judyz-cffi",
-    version="0.8.3",
-    long_description=read("README.rst"),
+    version="0.8.4",
+    long_description=read("README.md"),
+    long_description_content_type="text/markdown",
     packages=["judyz_cffi"],
     # package_data={
     #     "judyz-cffi": [
@@ -30,18 +32,19 @@ setup(
     setup_requires=["cffi>=1.0.0"],
     cffi_modules=["judyz_cffi/_build.py:ffi"],
     install_requires=["cffi>=1.0.0"],
+    include_package_data=True,
     test_suite="tests",
-    tests_require=[
-        'nose',
-    ],
+    tests_require=["nose"],
     license=read("LICENSE"),
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
-        'Operating System :: POSIX',
-        'Natural Language :: English',
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: POSIX",
+        "Natural Language :: English",
         "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.7',
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.5",
     ],
 )

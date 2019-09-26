@@ -3,3 +3,6 @@ build/
 *.c
 *.so
 *.pyc
+dist/
+*.egg-info
+.eggs/
