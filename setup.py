@@ -31,7 +31,7 @@ setup(
     url="https://github.com/botify-labs/judyz",
     setup_requires=["cffi>=1.0.0"],
     cffi_modules=["judyz_cffi/_build.py:ffi"],
-    install_requires=["cffi>=1.0.0"],
+    install_requires=["cffi>=1.0.0", "typing"],
     include_package_data=True,
     test_suite="tests",
     tests_require=["nose"],
