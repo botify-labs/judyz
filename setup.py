@@ -11,27 +11,17 @@ def read(fname):
 
 setup(
     name="judyz-cffi",
-    version="0.8.4",
+    version="0.8.4rc4",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
     packages=["judyz_cffi"],
-    # package_data={
-    #     "judyz-cffi": [
-    #         "judy_cffi/_build.py",
-    #         "judy_cffi/Judy_cffi.h",
-    #         "LICENSE",
-    #         "README.rst",
-    #         # "judy_cffi/_judy_cffi.py",
-    #     ],
-    # },
-    # py_modules=["judyz_cffi"],
     author="Yves Bastide",
     author_email="yves@botify.com",
     description="Python CFFI Judy wrapper",
     url="https://github.com/botify-labs/judyz",
     setup_requires=["cffi>=1.0.0"],
     cffi_modules=["judyz_cffi/_build.py:ffi"],
-    install_requires=["cffi>=1.0.0", "typing"],
+    install_requires=["cffi>=1.0.0", "six", "typing"],
     include_package_data=True,
     test_suite="tests",
     tests_require=["nose"],
@@ -46,5 +36,6 @@ setup(
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.7",
     ],
 )

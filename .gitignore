@@ -6,3 +6,4 @@ build/
 dist/
 *.egg-info
 .eggs/
+/judyz_cffi/_judy_cffi.py

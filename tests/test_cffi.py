@@ -8,10 +8,10 @@ import os
 import inspect
 
 from nose.tools import raises
-
+from six import iteritems
 
 path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-sys.path.append(os.path.join(path, "../src/judyzcffi"))
+sys.path.append(os.path.join(path, "../../judyz"))
 
 from judyz_cffi import Judy1, JudyL, JudySL
 
@@ -187,7 +187,7 @@ def test_jl_iteritems():
             j[i + 10] = i
         i = 0
         start = True
-        for k, v in j.iteritems():
+        for k, v in iteritems(j):
             assert k == v + 10
             if start:
                 assert k == 10
@@ -217,7 +217,7 @@ def test_jl_signed():
         for k, v in j:
             assert k == -1
             assert v == -1
-        for k, v in j.iteritems():
+        for k, v in iteritems(j):
             assert k == -1
             assert v == -1
         for k in j.keys():
@@ -249,21 +249,21 @@ def test_jsl_2():
     kv = [("bingo", 1), ("zlithoa", -1), ("all", 42)]
     with JudySL(kv) as j:
         assert len(j) == 3
-        jitems = list(j.iteritems())
+        jitems = list(iteritems(j))
         assert jitems == sorted(kv)
 
 
 def test_jsl_3():
     kv = [("a", 1), ("bb", 2), ("ccc", 3), ("dddd", 4), ("eeeee", 5)]
     with JudySL(kv) as j:
-        jitems = list(j.iteritems())
+        jitems = list(iteritems(j))
         assert jitems == kv
 
 
 def test_jsl_4():
     kv = [("aaaaa", 1), ("bbbb", 2), ("ccc", 3), ("dd", 4), ("e", 5)]
     with JudySL(kv) as j:
-        jitems = list(j.iteritems())
+        jitems = list(iteritems(j))
         assert jitems == kv
 
 
