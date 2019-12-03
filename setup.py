@@ -11,7 +11,7 @@ def read(fname):
 
 setup(
     name="judyz-cffi",
-    version="0.8.4rc4",
+    version="0.8.4rc5",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
     packages=["judyz_cffi"],
@@ -36,6 +36,7 @@ setup(
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
     ],
 )
