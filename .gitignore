@@ -3,3 +3,7 @@ build/
 *.c
 *.so
 *.pyc
+dist/
+*.egg-info
+.eggs/
+/judyz_cffi/_judy_cffi.py

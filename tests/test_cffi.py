@@ -8,13 +8,12 @@ import os
 import inspect
 
 from nose.tools import raises
+from six import iteritems
 
+path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+sys.path.append(os.path.join(path, "../../judyz"))
 
-path = os.path.dirname(
-    os.path.abspath(inspect.getfile(inspect.currentframe())))
-sys.path.append(os.path.join(path, "../src/judyzcffi"))
-
-from judyz_cffi import (Judy1, JudyL, JudySL)
+from judyz_cffi import Judy1, JudyL, JudySL
 
 
 def test_j1_compiled_ok():
@@ -22,19 +21,44 @@ def test_j1_compiled_ok():
     Check miscompiled libJudy
     """
     items = [
-        39895168241613, 72383693324832, 395899889036069, 847472082254022,
-        946081064318053, 1037167590154045,
-        1633874457044695, 1693551557777793, 1699866756097333, 2297933432179674,
-        2340748542246111, 2490696201066604,
-        2928757784612027, 3419613478295142, 3477583438964521, 3487665594607298,
-        3714788097418699, 3721974488148864,
-        3758589574777127, 4156020789217938, 4459711081140573, 4682530741276476,
-        4731624807195863, 4846840683894723,
-        4857387254864689, 4873346723597917, 4966839149608974, 5631406002858271,
-        5722255428668219, 5820718729024077,
-        6209639118315956, 6406299749329887, 6454295835737737, 6503048444249319,
-        6520786252857121, 6906836761168795,
-        6926132865086029, 6954533820994232
+        39895168241613,
+        72383693324832,
+        395899889036069,
+        847472082254022,
+        946081064318053,
+        1037167590154045,
+        1633874457044695,
+        1693551557777793,
+        1699866756097333,
+        2297933432179674,
+        2340748542246111,
+        2490696201066604,
+        2928757784612027,
+        3419613478295142,
+        3477583438964521,
+        3487665594607298,
+        3714788097418699,
+        3721974488148864,
+        3758589574777127,
+        4156020789217938,
+        4459711081140573,
+        4682530741276476,
+        4731624807195863,
+        4846840683894723,
+        4857387254864689,
+        4873346723597917,
+        4966839149608974,
+        5631406002858271,
+        5722255428668219,
+        5820718729024077,
+        6209639118315956,
+        6406299749329887,
+        6454295835737737,
+        6503048444249319,
+        6520786252857121,
+        6906836761168795,
+        6926132865086029,
+        6954533820994232,
     ]
     with Judy1() as j:
         for i in items:
@@ -148,13 +172,13 @@ def test_jl_get_absent():
 def test_jl_from_dict():
     with JudyL({10: 1, 2: 11}) as j:
         d = dict(j)
-        assert d == {2L: 11L, 10L: 1L}
+        assert d == {2: 11, 10: 1}
 
 
 def test_jl_from_list():
     with JudyL([(10, 1), (2, 11)]) as j:
         d = dict(j)
-        assert d == {2L: 11L, 10L: 1L}
+        assert d == {2: 11, 10: 1}
 
 
 def test_jl_iteritems():
@@ -163,7 +187,7 @@ def test_jl_iteritems():
             j[i + 10] = i
         i = 0
         start = True
-        for k, v in j.iteritems():
+        for k, v in iteritems(j):
             assert k == v + 10
             if start:
                 assert k == 10
@@ -193,11 +217,12 @@ def test_jl_signed():
         for k, v in j:
             assert k == -1
             assert v == -1
-        for k, v in j.iteritems():
+        for k, v in iteritems(j):
             assert k == -1
             assert v == -1
         for k in j.keys():
             assert k == -1
+
 
 def test_jl_inc():
     with JudyL() as j:
@@ -221,44 +246,44 @@ def test_jsl_1():
 
 
 def test_jsl_2():
-    kv = [('bingo', 1), ('zlithoa', -1), ('all', 42)]
+    kv = [("bingo", 1), ("zlithoa", -1), ("all", 42)]
     with JudySL(kv) as j:
         assert len(j) == 3
-        jitems = list(j.iteritems())
+        jitems = list(iteritems(j))
         assert jitems == sorted(kv)
 
 
 def test_jsl_3():
-    kv = [('a', 1), ('bb', 2), ('ccc', 3), ('dddd', 4), ('eeeee', 5)]
+    kv = [("a", 1), ("bb", 2), ("ccc", 3), ("dddd", 4), ("eeeee", 5)]
     with JudySL(kv) as j:
-        jitems = list(j.iteritems())
+        jitems = list(iteritems(j))
         assert jitems == kv
 
 
 def test_jsl_4():
-    kv = [('aaaaa', 1), ('bbbb', 2), ('ccc', 3), ('dd', 4), ('e', 5)]
+    kv = [("aaaaa", 1), ("bbbb", 2), ("ccc", 3), ("dd", 4), ("e", 5)]
     with JudySL(kv) as j:
-        jitems = list(j.iteritems())
+        jitems = list(iteritems(j))
         assert jitems == kv
 
 
 def test_jsl_first_next():
-    kv = [('bbbb', 2), ('aaaaa', 1), ('ccc', 3), ('dd', 4), ('e', 5)]
+    kv = [("bbbb", 2), ("aaaaa", 1), ("ccc", 3), ("dd", 4), ("e", 5)]
     with JudySL(kv) as j:
         key, value, buf = j.get_first()
-        assert key == 'aaaaa'
+        assert key == "aaaaa"
         assert value == 1
         key, value, buf = j.get_next(buf)
-        assert key == 'bbbb'
+        assert key == "bbbb"
         assert value == 2
         key, value, buf = j.get_next(buf)
-        assert key == 'ccc'
+        assert key == "ccc"
         assert value == 3
         key, value, buf = j.get_next(buf)
-        assert key == 'dd'
+        assert key == "dd"
         assert value == 4
         key, value, buf = j.get_next(buf)
-        assert key == 'e'
+        assert key == "e"
         assert value == 5
         key, value, buf = j.get_next(buf)
         assert key is None
@@ -276,10 +301,10 @@ def jdsn(fd):
     """
     with JudySL() as j:
         for line in fd:
-            line = line.rstrip('\n')
+            line = line.rstrip("\n")
             j.inc(line)
         for k, v in j:
-            print('{}\t{}'.format(k, v))
+            print("{}\t{}".format(k, v))
 
 
 if __name__ == "__main__":
