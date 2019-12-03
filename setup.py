@@ -11,7 +11,7 @@ def read(fname):
 
 setup(
     name="judyz-cffi",
-    version="0.8.4rc5",
+    version="0.8.5",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
     packages=["judyz_cffi"],
