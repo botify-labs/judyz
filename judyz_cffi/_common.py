@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 
 class _JudyCommon:
-    def update(self, other: Optional[Union[Mapping[TKey, int], Iterable[Tuple[TKey, int]]]]) -> None:
+    def update(self, other: Mapping[TKey, int] | Iterable[tuple[TKey, int]] | None) -> None:
         if other is None:
             return
         has_keys = True

@@ -16,7 +16,7 @@ __all__ = ["JudyL", "JudyLIterator"]
 _load()
 
 
-class JudyLIterator(object):
+class JudyLIterator:
     def __init__(self, j: JudyL) -> None:
         self._j = j
         self._array = j._array  # noqa
@@ -26,7 +26,7 @@ class JudyLIterator(object):
     def __iter__(self):
         return self
 
-    def __next__(self) -> Tuple[int, int]:
+    def __next__(self) -> tuple[int, int]:
         err = _ffi.new("JError_t *")
         if self._start:
             p = _cjudy.JudyLFirst(self._array[0], self._index, err)
@@ -118,10 +118,10 @@ class JudyL(_JudyCommon):
         index = _ffi.new("signed long*")
         p = _cjudy.JudyLFirst(self._array[0], index, err)
         if p == JudyL.M1:
-            raise Exception("err={}".format(err.je_Errno))
+            raise Exception(f"err={err.je_Errno}")
         return err, index, p
 
-    def items(self) -> Iterable[Tuple[int, int]]:
+    def items(self) -> Iterable[tuple[int, int]]:
         err, index, p = self._start_iter()
         if p == _ffi.NULL:
             return
@@ -130,7 +130,7 @@ class JudyL(_JudyCommon):
         while 1:
             p = _cjudy.JudyLNext(self._array[0], index, err)
             if p == JudyL.M1:
-                raise Exception("err={}".format(err.je_Errno))
+                raise Exception(f"err={err.je_Errno}")
             if p == _ffi.NULL:
                 break
             v = int(_ffi.cast("signed long", p[0]))
@@ -144,7 +144,7 @@ class JudyL(_JudyCommon):
         while 1:
             p = _cjudy.JudyLNext(self._array[0], index, err)
             if p == JudyL.M1:
-                raise Exception("err={}".format(err.je_Errno))
+                raise Exception(f"err={err.je_Errno}")
             if p == _ffi.NULL:
                 break
             yield index[0]

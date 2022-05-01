@@ -17,7 +17,7 @@ __all__ = ["JudySL", "JudySLIterator"]
 _load()
 
 
-class StringCache(object):
+class StringCache:
     MAX_BUILDER_SIZE = 360
     buf = None
 
@@ -46,7 +46,7 @@ class StringCache(object):
             StringCache.buf = buf
 
 
-class JudySLIterator(object):
+class JudySLIterator:
     _STATE_FIRST = 0
     _STATE_NEXT = 1
     _STATE_END = 2
@@ -60,7 +60,7 @@ class JudySLIterator(object):
     def __iter__(self):
         return self
 
-    def next(self) -> Tuple[str, int]:
+    def next(self) -> tuple[str, int]:
         err = _ffi.new("JError_t *")
         if self._state == JudySLIterator._STATE_FIRST:
             p = _cjudy.JudySLFirst(self._array[0], self._index, err)
@@ -89,7 +89,7 @@ class JudySL(_JudyCommon):
 
     M1 = _ffi.cast("void*", -1)
 
-    def __init__(self, other: Optional[Union[Mapping[str, int], Iterable[Tuple[str, int]]]] = None) -> None:
+    def __init__(self, other: Mapping[str, int] | Iterable[tuple[str, int]] | None = None) -> None:
         self._array = _ffi.new("JudySL **")
         self._max_len = 1
         if other:
@@ -165,7 +165,7 @@ class JudySL(_JudyCommon):
     def __iter__(self):
         return JudySLIterator(self)
 
-    def items(self) -> Iterable[Tuple[str, int]]:
+    def items(self) -> Iterable[tuple[str, int]]:
         err = _ffi.new("JError_t *")
         index = StringCache.acquire(
             self._max_len
@@ -173,7 +173,7 @@ class JudySL(_JudyCommon):
         try:
             p = _cjudy.JudySLFirst(self._array[0], index, err)
             if p == JudySL.M1:
-                raise Exception("err={}".format(err.je_Errno))
+                raise Exception(f"err={err.je_Errno}")
             if p == _ffi.NULL:
                 return
             v = int(_ffi.cast("signed long", p[0]))
@@ -182,7 +182,7 @@ class JudySL(_JudyCommon):
             while True:
                 p = _cjudy.JudySLNext(self._array[0], index, err)
                 if p == JudySL.M1:
-                    raise Exception("err={}".format(err.je_Errno))
+                    raise Exception(f"err={err.je_Errno}")
                 if p == _ffi.NULL:
                     break
                 v = int(_ffi.cast("signed long", p[0]))
@@ -230,7 +230,7 @@ class JudySL(_JudyCommon):
     def _cast(buf, err, p):
         if p == JudySL.M1:
             StringCache.release(buf)
-            raise Exception("err={}".format(err.je_Errno))
+            raise Exception(f"err={err.je_Errno}")
         if p == _ffi.NULL:
             StringCache.release(buf)
             return None, None, None

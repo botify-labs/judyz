@@ -13,7 +13,7 @@ __all__ = ["Judy1", "Judy1Iterator"]
 _load()
 
 
-class Judy1Iterator(object):
+class Judy1Iterator:
     def __init__(self, j: Judy1) -> None:
         self._j = j
         self._array = j._array  # noqa
@@ -37,12 +37,12 @@ class Judy1Iterator(object):
         return self._index[0]
 
 
-class Judy1(object):
+class Judy1:
     """
     Judy1 class.
     """
 
-    def __init__(self, iterable: Optional[Iterable[int]] = None) -> None:
+    def __init__(self, iterable: Iterable[int] | None = None) -> None:
         self._array = _ffi.new("Judy1 **")
         if iterable:
             for item in iterable:

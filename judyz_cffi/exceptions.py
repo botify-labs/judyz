@@ -22,8 +22,8 @@ class JudyError(Exception):
     ]
 
     def __init__(self, errno: int) -> None:
-        super(JudyError, self).__init__()
+        super().__init__()
         if 0 <= errno < len(JudyError._msgs):
             self.args = (JudyError._msgs[errno],)
         else:
-            self.args = ("Error {}".format(errno),)
+            self.args = (f"Error {errno}",)
