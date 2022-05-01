@@ -25,9 +25,11 @@ Note that the Cython wrapper is currently unmaintained: it doesn't work with PyP
 
     python setup.py sdist
 
-`judyz_cython` can be distributed as an egg:
+`judyz_cython` can be distributed as a wheel:
 
-    python setup.py bdist_egg
+    python setup.py bdist_wheel
+
+See the Dockerfile for an example of a Python 3.7 wheel.
 
 To compile `judyz-cython` inplace:
 
@@ -49,4 +51,4 @@ If `pip install` doesn't work:
 ## Usage Requirements
 
 * libjudydebian1 (not the Ubuntu 14.04 buggy one)
-* `judyz-cffi`: libffi6
+* `judyz-cffi`: currently tested with libffi6 or libffi7
