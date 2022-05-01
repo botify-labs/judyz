@@ -17,8 +17,7 @@ _load()
 
 
 class JudyLIterator(object):
-    def __init__(self, j):
-        # type: (JudyL) -> None
+    def __init__(self, j: JudyL) -> None:
         self._j = j
         self._array = j._array  # noqa
         self._start = True
@@ -27,8 +26,7 @@ class JudyLIterator(object):
     def __iter__(self):
         return self
 
-    def __next__(self):
-        # type: () -> Tuple[int, int]
+    def __next__(self) -> Tuple[int, int]:
         err = _ffi.new("JError_t *")
         if self._start:
             p = _cjudy.JudyLFirst(self._array[0], self._index, err)
@@ -55,14 +53,12 @@ class JudyL(_JudyCommon):
         if other:
             self.update(other)
 
-    def clear(self):
-        # type: () -> None
+    def clear(self) -> None:
         err = _ffi.new("JError_t *")
         if _cjudy.JudyLFreeArray(self._array, err) == -1:
             raise JudyError(err.je_Errno)
 
-    def __len__(self):
-        # type: () -> int
+    def __len__(self) -> int:
         err = _ffi.new("JError_t *")
         rc = _cjudy.JudyLCount(self._array[0], 0, -1, err)
         if rc == -1:
@@ -75,16 +71,14 @@ class JudyL(_JudyCommon):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.clear()
 
-    def __setitem__(self, key, value):
-        # type: (int, int) -> None
+    def __setitem__(self, key: int, value: int) -> None:
         err = _ffi.new("JError_t *")
         p = _cjudy.JudyLIns(self._array, key, err)
         if p == _ffi.NULL:
             raise JudyError(err.je_Errno)
         p[0] = _ffi.cast("void*", value)
 
-    def __getitem__(self, item):
-        # type: (int) -> int
+    def __getitem__(self, item: int) -> int:
         err = _ffi.new("JError_t *")
         p = _cjudy.JudyLGet(self._array[0], item, err)
         if p == _ffi.NULL:
@@ -93,16 +87,14 @@ class JudyL(_JudyCommon):
             raise JudyError(err.je_Errno)
         return int(_ffi.cast("signed long", p[0]))
 
-    def __contains__(self, item):
-        # type: (int) -> bool
+    def __contains__(self, item: int) -> bool:
         err = _ffi.new("JError_t *")
         p = _cjudy.JudyLGet(self._array[0], item, err)
         if p == JudyL.M1:
             raise JudyError(err.je_Errno)
         return p != _ffi.NULL
 
-    def get(self, item, default_value=0):
-        # type: (int, int) -> int
+    def get(self, item: int, default_value: int = 0) -> int:
         err = _ffi.new("JError_t *")
         p = _cjudy.JudyLGet(self._array[0], item, err)
         if p == _ffi.NULL:
@@ -111,8 +103,7 @@ class JudyL(_JudyCommon):
             raise JudyError(err.je_Errno)
         return int(_ffi.cast("signed long", p[0]))
 
-    def inc(self, key, value=1):
-        # type: (int, int) -> None
+    def inc(self, key: int, value: int = 1) -> None:
         err = _ffi.new("JError_t *")
         p = _cjudy.JudyLIns(self._array, key, err)
         if p == _ffi.NULL:
@@ -130,8 +121,7 @@ class JudyL(_JudyCommon):
             raise Exception("err={}".format(err.je_Errno))
         return err, index, p
 
-    def items(self):
-        # type: () -> Iterable[Tuple[int, int]]
+    def items(self) -> Iterable[Tuple[int, int]]:
         err, index, p = self._start_iter()
         if p == _ffi.NULL:
             return
@@ -146,8 +136,7 @@ class JudyL(_JudyCommon):
             v = int(_ffi.cast("signed long", p[0]))
             yield index[0], v
 
-    def keys(self):
-        # type: () -> Iterable[int]
+    def keys(self) -> Iterable[int]:
         err, index, p = self._start_iter()
         if p == _ffi.NULL:
             return

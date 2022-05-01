@@ -21,8 +21,7 @@ class JudyError(Exception):
         "Unsorted Indexes",
     ]
 
-    def __init__(self, errno):
-        # type: (int) -> None
+    def __init__(self, errno: int) -> None:
         super(JudyError, self).__init__()
         if 0 <= errno < len(JudyError._msgs):
             self.args = (JudyError._msgs[errno],)
