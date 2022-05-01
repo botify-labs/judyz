@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from .exceptions import JudyError
@@ -22,7 +24,7 @@ class Judy1Iterator(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         # type: () -> int
         err = _ffi.new("JError_t *")
         if self._start:
@@ -35,8 +37,6 @@ class Judy1Iterator(object):
         if rc == -1:
             raise JudyError(err.je_Errno)
         return self._index[0]
-
-    __next__ = next
 
 
 class Judy1(object):

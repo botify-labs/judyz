@@ -1,10 +1,15 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
+from ._common import _JudyCommon
 from .exceptions import JudyError
 from .internal import _cjudy, _ffi, _load
 
 if TYPE_CHECKING:
-    from typing import Iterable, Mapping, Optional, Tuple, Union
+    from typing import Iterable, Tuple
+
+    TKey = int
 
 __all__ = ["JudyL", "JudyLIterator"]
 
@@ -22,7 +27,7 @@ class JudyLIterator(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         # type: () -> Tuple[int, int]
         err = _ffi.new("JError_t *")
         if self._start:
@@ -37,10 +42,8 @@ class JudyLIterator(object):
         v = _ffi.cast("signed long", p[0])
         return self._index[0], int(v)
 
-    __next__ = next
 
-
-class JudyL(object):
+class JudyL(_JudyCommon):
     """
     JudyL class.
     """
@@ -51,22 +54,6 @@ class JudyL(object):
         self._array = _ffi.new("JudyL **")
         if other:
             self.update(other)
-
-    def update(self, other):
-        # type: (Optional[Union[Mapping[int, int], Iterable[Tuple[int, int]]]]) -> None
-        if other is None:
-            return
-        has_keys = True
-        try:
-            other.keys  # noqa
-        except AttributeError:
-            has_keys = False
-        if has_keys:
-            for key in other:
-                self[key] = other[key]
-        else:
-            for (k, v) in other:
-                self[k] = v
 
     def clear(self):
         # type: () -> None
@@ -135,13 +122,17 @@ class JudyL(object):
     def __iter__(self):
         return JudyLIterator(self)
 
-    def items(self):
-        # type: () -> Iterable[Tuple[int, int]]
+    def _start_iter(self):
         err = _ffi.new("JError_t *")
         index = _ffi.new("signed long*")
         p = _cjudy.JudyLFirst(self._array[0], index, err)
         if p == JudyL.M1:
             raise Exception("err={}".format(err.je_Errno))
+        return err, index, p
+
+    def items(self):
+        # type: () -> Iterable[Tuple[int, int]]
+        err, index, p = self._start_iter()
         if p == _ffi.NULL:
             return
         v = int(_ffi.cast("signed long", p[0]))
@@ -155,15 +146,9 @@ class JudyL(object):
             v = int(_ffi.cast("signed long", p[0]))
             yield index[0], v
 
-    iteritems = items
-
     def keys(self):
         # type: () -> Iterable[int]
-        err = _ffi.new("JError_t *")
-        index = _ffi.new("signed long*")
-        p = _cjudy.JudyLFirst(self._array[0], index, err)
-        if p == JudyL.M1:
-            raise Exception("err={}".format(err.je_Errno))
+        err, index, p = self._start_iter()
         if p == _ffi.NULL:
             return
         yield index[0]
@@ -174,5 +159,3 @@ class JudyL(object):
             if p == _ffi.NULL:
                 break
             yield index[0]
-
-    iterkeys = keys

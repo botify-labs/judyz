@@ -2,7 +2,7 @@
 CFFI loader for Judy.
 """
 
-from __future__ import absolute_import
+__version__ = "0.9.0"
 
 from judyz_cffi.internal import _load
 

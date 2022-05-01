@@ -1,12 +1,15 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
-from six import PY3, text_type
-
+from ._common import _JudyCommon
 from .exceptions import JudyError
 from .internal import _cjudy, _ffi, _load
 
 if TYPE_CHECKING:
     from typing import Iterable, Mapping, Optional, Tuple, Union
+
+    TKey = str
 
 
 __all__ = ["JudySL", "JudySLIterator"]
@@ -31,7 +34,7 @@ class StringCache(object):
                     StringCache.buf = None
                     b[0] = 0
                     return b
-        return _ffi.new("unsigned char[%d]" % capacity)
+        return _ffi.new(f"unsigned char[{capacity}]")
 
     @staticmethod
     def release(buf):
@@ -75,15 +78,13 @@ class JudySLIterator(object):
         if p == JudySL.M1:
             raise JudyError(err.je_Errno)
         v = _ffi.cast("signed long", p[0])
-        k = _ffi.string(self._index)
-        if PY3:
-            k = k.decode("utf-8")
+        k = _ffi.string(self._index).decode("utf-8")
         return k, int(v)
 
     __next__ = next
 
 
-class JudySL(object):
+class JudySL(_JudyCommon):
     """
     JudySL class.
     """
@@ -97,22 +98,6 @@ class JudySL(object):
         if other:
             self.update(other)
 
-    def update(self, other):
-        # type: (Optional[Union[Mapping[str, int], Iterable[Tuple[str, int]]]]) -> None
-        if other is None:
-            return
-        has_keys = True
-        try:
-            other.keys  # noqa
-        except AttributeError:
-            has_keys = False
-        if has_keys:
-            for key in other:
-                self[key] = other[key]
-        else:
-            for (k, v) in other:
-                self[k] = v
-
     def clear(self):
         err = _ffi.new("JError_t *")
         if _cjudy.JudySLFreeArray(self._array, err) == -1:
@@ -120,7 +105,7 @@ class JudySL(object):
 
     def __len__(self):
         n = 0
-        for k, v in self.iteritems():
+        for _ in self.items():
             n += 1
         return n
 
@@ -133,8 +118,7 @@ class JudySL(object):
     def __setitem__(self, key, value):
         # type: (str, int) -> None
         err = _ffi.new("JError_t *")
-        if isinstance(key, text_type):
-            key = key.encode("utf-8")
+        key = key.encode("utf-8")
         p = _cjudy.JudySLIns(self._array, key, err)
         if p == _ffi.NULL:
             raise JudyError(err.je_Errno)
@@ -146,8 +130,7 @@ class JudySL(object):
     def inc(self, key):
         # type: (str) -> None
         err = _ffi.new("JError_t *")
-        if isinstance(key, text_type):
-            key = key.encode("utf-8")
+        key = key.encode("utf-8")
         p = _cjudy.JudySLIns(self._array, key, err)
         if p == _ffi.NULL:
             raise JudyError(err.je_Errno)
@@ -159,8 +142,7 @@ class JudySL(object):
     def __getitem__(self, item):
         # type: (str) -> int
         err = _ffi.new("JError_t *")
-        if isinstance(item, text_type):
-            item = item.encode("utf-8")
+        item = item.encode("utf-8")
         p = _cjudy.JudySLGet(self._array[0], item, err)
         if p == _ffi.NULL:
             raise KeyError(item)
@@ -171,8 +153,7 @@ class JudySL(object):
     def __contains__(self, item):
         # type: (str) -> bool
         err = _ffi.new("JError_t *")
-        if isinstance(item, text_type):
-            item = item.encode("utf-8")
+        item = item.encode("utf-8")
         p = _cjudy.JudySLGet(self._array[0], item, err)
         if p == JudySL.M1:
             raise JudyError(err.je_Errno)
@@ -181,8 +162,7 @@ class JudySL(object):
     def get(self, item, default_value=0):
         # type: (str, int) -> int
         err = _ffi.new("JError_t *")
-        if isinstance(item, text_type):
-            item = item.encode("utf-8")
+        item = item.encode("utf-8")
         p = _cjudy.JudySLGet(self._array[0], item, err)
         if p == _ffi.NULL:
             return default_value
@@ -198,7 +178,7 @@ class JudySL(object):
         err = _ffi.new("JError_t *")
         index = StringCache.acquire(
             self._max_len
-        )  # _ffi.new("char[%d]" % self._max_len)
+        )
         try:
             p = _cjudy.JudySLFirst(self._array[0], index, err)
             if p == JudySL.M1:
@@ -206,9 +186,7 @@ class JudySL(object):
             if p == _ffi.NULL:
                 return
             v = int(_ffi.cast("signed long", p[0]))
-            k = _ffi.string(index)
-            if PY3:
-                k = k.decode("utf-8")
+            k = _ffi.string(index).decode("utf-8")
             yield k, v
             while True:
                 p = _cjudy.JudySLNext(self._array[0], index, err)
@@ -217,27 +195,19 @@ class JudySL(object):
                 if p == _ffi.NULL:
                     break
                 v = int(_ffi.cast("signed long", p[0]))
-                k = _ffi.string(index)
-                if PY3:
-                    k = k.decode("utf-8")
+                k = _ffi.string(index).decode("utf-8")
                 yield k, v
         finally:
             StringCache.release(index)
-
-    iteritems = items
 
     def keys(self):
         for k, v in self.items():
             yield k
 
-    iterkeys = keys
-
     def values(self):
         # type: () -> Iterable[str]
         for k, v in self.items():
             yield v
-
-    itervalues = values
 
     def get_first(self, buf=None):
         """
@@ -250,17 +220,7 @@ class JudySL(object):
         if buf is None:
             buf = StringCache.acquire(self._max_len)
         p = _cjudy.JudySLFirst(self._array[0], buf, err)
-        if p == JudySL.M1:
-            StringCache.release(buf)
-            raise Exception("err={}".format(err.je_Errno))
-        if p == _ffi.NULL:
-            StringCache.release(buf)
-            return None, None, None
-        v = int(_ffi.cast("signed long", p[0]))
-        k = _ffi.string(buf)
-        if PY3:
-            k = k.decode("utf-8")
-        return k, v, buf
+        return self._cast(buf, err, p)
 
     def get_next(self, buf):
         """
@@ -274,14 +234,17 @@ class JudySL(object):
             return None, None, None
         err = _ffi.new("JError_t *")
         p = _cjudy.JudySLNext(self._array[0], buf, err)
+        return self._cast(buf, err, p)
+
+    @staticmethod
+    def _cast(buf, err, p):
         if p == JudySL.M1:
             StringCache.release(buf)
             raise Exception("err={}".format(err.je_Errno))
         if p == _ffi.NULL:
             StringCache.release(buf)
             return None, None, None
-        v = int(_ffi.cast("signed long", p[0]))
-        k = _ffi.string(buf)
-        if PY3:
-            k = k.decode("utf-8")
-        return k, v, buf
+        else:
+            v = int(_ffi.cast("signed long", p[0]))
+            k = _ffi.string(buf).decode("utf-8")
+            return k, v, buf

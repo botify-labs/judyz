@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 class JudyError(Exception):
     """Judy error.
     """
@@ -22,9 +25,6 @@ class JudyError(Exception):
         # type: (int) -> None
         super(JudyError, self).__init__()
         if 0 <= errno < len(JudyError._msgs):
-            self.message = JudyError._msgs[errno]
+            self.args = (JudyError._msgs[errno],)
         else:
-            self.message = "Error {}".format(errno)
-
-    def __str__(self):
-        return self.message
+            self.args = ("Error {}".format(errno),)
