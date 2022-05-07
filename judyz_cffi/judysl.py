@@ -7,7 +7,7 @@ from .exceptions import JudyError
 from .internal import _cjudy, _ffi, _load
 
 if TYPE_CHECKING:
-    from typing import Iterable, Mapping, Optional, Tuple, Union
+    from typing import Iterable, Mapping
 
     TKey = str
 

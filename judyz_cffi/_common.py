@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from typing import Iterable, Mapping, Optional, Tuple, Union, ClassVar
+    from typing import Iterable, Mapping, ClassVar
 
     TKey = ClassVar["TKey"]
 
