@@ -1,14 +1,17 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
-    from typing import Iterable, Mapping, ClassVar
+    from typing import ClassVar, Iterable, Mapping
 
     TKey = ClassVar["TKey"]
 
 
 class _JudyCommon:
-    def update(self, other: Mapping[TKey, int] | Iterable[tuple[TKey, int]] | None) -> None:
+    def update(
+        self, other: Mapping[TKey, int] | Iterable[tuple[TKey, int]] | None
+    ) -> None:
         if other is None:
             return
         has_keys = True

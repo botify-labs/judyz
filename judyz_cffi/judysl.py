@@ -89,7 +89,9 @@ class JudySL(_JudyCommon):
 
     M1 = _ffi.cast("void*", -1)
 
-    def __init__(self, other: Mapping[str, int] | Iterable[tuple[str, int]] | None = None) -> None:
+    def __init__(
+        self, other: Mapping[str, int] | Iterable[tuple[str, int]] | None = None
+    ) -> None:
         self._array = _ffi.new("JudySL **")
         self._max_len = 1
         if other:
@@ -167,9 +169,7 @@ class JudySL(_JudyCommon):
 
     def items(self) -> Iterable[tuple[str, int]]:
         err = _ffi.new("JError_t *")
-        index = StringCache.acquire(
-            self._max_len
-        )
+        index = StringCache.acquire(self._max_len)
         try:
             p = _cjudy.JudySLFirst(self._array[0], index, err)
             if p == JudySL.M1:

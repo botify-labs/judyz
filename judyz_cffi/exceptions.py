@@ -2,8 +2,7 @@ from __future__ import annotations
 
 
 class JudyError(Exception):
-    """Judy error.
-    """
+    """Judy error."""
 
     _msgs = [
         "None",

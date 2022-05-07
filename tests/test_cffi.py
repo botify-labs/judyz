@@ -2,10 +2,11 @@
 (nose)tests.
 """
 
+import inspect
+import os
+
 # HACK
 import sys
-import os
-import inspect
 
 from nose.tools import raises
 
