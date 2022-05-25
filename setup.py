@@ -1,17 +1,29 @@
 #!/usr/bin/env python
-import io
+import codecs
+import os
+
 from setuptools import setup
 
 
-def read(fname):
-    with io.open(fname, encoding="utf8") as fp:
-        content = fp.read()
-    return content
+# From https://packaging.python.org/en/latest/guides/single-sourcing-package-version/
+def read(rel_path):
+    here = os.path.abspath(os.path.dirname(__file__))
+    with codecs.open(os.path.join(here, rel_path), "r") as fp:
+        return fp.read()
+
+
+def get_version(rel_path):
+    for line in read(rel_path).splitlines():
+        if line.startswith("__version__"):
+            delim = '"' if '"' in line else "'"
+            return line.split(delim)[1]
+    else:
+        raise RuntimeError("Unable to find version string.")
 
 
 setup(
     name="judyz-cffi",
-    version="0.8.5",
+    version=get_version("judyz_cffi/__init__.py"),
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
     packages=["judyz_cffi"],
@@ -21,7 +33,7 @@ setup(
     url="https://github.com/botify-labs/judyz",
     setup_requires=["cffi>=1.0.0"],
     cffi_modules=["judyz_cffi/_build.py:ffi"],
-    install_requires=["cffi>=1.0.0", "six", "typing"],
+    install_requires=["cffi>=1.0.0"],
     include_package_data=True,
     test_suite="tests",
     tests_require=["nose"],
@@ -32,11 +44,10 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: POSIX",
         "Natural Language :: English",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
     ],
 )

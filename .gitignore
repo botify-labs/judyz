@@ -1,9 +1,9 @@
-build/
-.idea/
+/build/
+/.idea/
 *.c
 *.so
 *.pyc
-dist/
+/dist/
 *.egg-info
-.eggs/
+/.eggs/
 /judyz_cffi/_judy_cffi.py

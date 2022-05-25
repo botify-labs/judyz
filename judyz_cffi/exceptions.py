@@ -1,6 +1,8 @@
+from __future__ import annotations
+
+
 class JudyError(Exception):
-    """Judy error.
-    """
+    """Judy error."""
 
     _msgs = [
         "None",
@@ -18,13 +20,9 @@ class JudyError(Exception):
         "Unsorted Indexes",
     ]
 
-    def __init__(self, errno):
-        # type: (int) -> None
-        super(JudyError, self).__init__()
+    def __init__(self, errno: int) -> None:
+        super().__init__()
         if 0 <= errno < len(JudyError._msgs):
-            self.message = JudyError._msgs[errno]
+            self.args = (JudyError._msgs[errno],)
         else:
-            self.message = "Error {}".format(errno)
-
-    def __str__(self):
-        return self.message
+            self.args = (f"Error {errno}",)

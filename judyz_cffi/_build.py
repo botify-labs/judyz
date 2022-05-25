@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from cffi import FFI
 
 JUDY_CFFI_H = "judyz_cffi/Judy_cffi.h"
